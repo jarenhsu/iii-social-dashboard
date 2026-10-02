@@ -131,6 +131,8 @@
   }
   .platform-section { margin-bottom: 40px; }
   .section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; padding-left: 10px; border-left: 4px solid var(--border); }
+  .block-label { font-size: 12px; color: var(--text-muted); margin: 4px 0 8px; }
+  .kpi-card.year { background: var(--surface2); }
   .section-title.fb { border-color: var(--fb); color: var(--fb); }
   .section-title.ig { border-color: var(--ig); color: var(--ig); }
 </style>
@@ -265,7 +267,7 @@ function render() {
 
   const platforms = [
     { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.1)', metrics: [
-      { key: colMap.fb_fans, label: '粉絲總數', sub: '當月快照' },
+      { key: colMap.fb_fans, label: '粉絲總數', sub: '當月快照', snapshot: true },
       { key: colMap.fb_reach, label: '觸及人數', sub: `${unit}觸及不重複人數` },
       { key: colMap.fb_engage, label: '貼文互動', sub: `${unit}貼文互動次數` },
       { key: colMap.fb_pageviews, label: '頁面瀏覽', sub: `${unit}粉絲頁瀏覽次數` },
@@ -273,7 +275,7 @@ function render() {
       { key: colMap.fb_follows, label: '新增追蹤', sub: `${unit}新增追蹤人數` },
     ]},
     { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.1)', metrics: [
-      { key: colMap.ig_followers, label: '追蹤者數', sub: '當月快照' },
+      { key: colMap.ig_followers, label: '追蹤者數', sub: '當月快照', snapshot: true },
       { key: colMap.ig_reach, label: '觸及帳號', sub: `${unit}觸及帳號數` },
       { key: colMap.ig_views, label: '瀏覽次數', sub: `${unit}內容瀏覽次數` },
       { key: colMap.ig_engage, label: '互動次數', sub: `${unit}內容互動總數` },
@@ -312,8 +314,31 @@ function render() {
       </div>`;
     }).join('');
 
+    // 全年度累計（只在每月檢視顯示）
+    let yearHtml = '';
+    if (currentView === 'monthly') {
+      const year = String(labels[labels.length - 1]).slice(0, 4);
+      const yearRows = data.filter(r => String(r[headers[0]]).startsWith(year));
+      const first = yearRows[0]?.[headers[0]], last = yearRows[yearRows.length - 1]?.[headers[0]];
+      const cards = metrics.filter(m => !m.snapshot).map(m => {
+        const vals = yearRows.filter(r => String(r[m.key] ?? '').trim() !== '').map(r => getVal(r, m.key));
+        const total = vals.reduce((a, b) => a + b, 0);
+        const avg = vals.length ? Math.round(total / vals.length) : 0;
+        return `<div class="kpi-card year">
+          <div class="kpi-label">全年 ${m.label}</div>
+          <div class="kpi-value ${p.id}">${numFmt(total)}</div>
+          <div class="kpi-change">月平均 ${numFmt(avg)}</div>
+        </div>`;
+      }).join('');
+      if (cards) yearHtml = `
+        <div class="block-label">${year} 全年度累計（${first} ~ ${last}，共 ${yearRows.length} 個月）</div>
+        <div class="kpi-grid">${cards}</div>
+        <div class="block-label">最新一期</div>`;
+    }
+
     html += `<section class="platform-section">
       <div class="section-title ${p.id}">${p.name}</div>
+      ${yearHtml}
       <div class="kpi-grid">${kpiHtml}</div>
       <div class="charts-grid">${chartHtml}</div>
     </section>`;
