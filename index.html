@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>資策會社群數據 Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --blue: #388bfd;
+    --blue-dim: #1f4b8e;
+    --teal: #39d353;
+    --purple: #a371f7;
+    --orange: #f78166;
+    --yellow: #e3b341;
+    --fb: #1877f2;
+    --ig: #e1306c;
+    --threads: #000000;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  header {
+    position: sticky; top: env(safe-area-inset-top, 0px);
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 28px; height: 28px; background: var(--blue);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: white; letter-spacing: -0.5px;
+  }
+  .logo-text { font-weight: 600; font-size: 15px; color: var(--text); }
+  .logo-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  .view-toggle {
+    display: flex; gap: 2px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 3px;
+  }
+  .view-btn {
+    padding: 5px 14px; border: none; border-radius: 5px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    background: transparent; color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .view-btn.active { background: var(--surface); color: var(--text); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+  .last-updated { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* Platform tabs */
+  .platform-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .platform-tab {
+    padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .platform-tab.active-fb { background: rgba(24,119,242,0.15); border-color: var(--fb); color: var(--fb); }
+  .platform-tab.active-ig { background: rgba(225,48,108,0.15); border-color: var(--ig); color: var(--ig); }
+  .platform-tab.active-all { background: rgba(56,139,253,0.15); border-color: var(--blue); color: var(--blue); }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
+  .kpi-value { font-size: 26px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; line-height: 1; }
+  .kpi-value.fb { color: var(--fb); }
+  .kpi-value.ig { color: var(--ig); }
+  .kpi-change { font-size: 11px; margin-top: 5px; color: var(--text-muted); }
+  .kpi-change.up { color: var(--teal); }
+  .kpi-change.down { color: var(--orange); }
+
+  /* Charts */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .chart-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 220px; }
+  .chart-wrap.tall { height: 280px; }
+
+  /* Loading */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 300px; flex-direction: column; gap: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-muted); }
+
+  .error-msg {
+    background: rgba(247,129,102,0.1); border: 1px solid var(--orange);
+    border-radius: 8px; padding: 16px; margin: 24px 0;
+    font-size: 13px; color: var(--orange);
+  }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 48px; color: var(--text-muted); font-size: 14px; }
+
+  @media (max-width: 768px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">III</div>
+    <div>
+      <div class="logo-text">資策會</div>
+      <div class="logo-sub">社群數據 Dashboard</div>
+    </div>
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" id="btn-monthly" onclick="setView('monthly')">每月</button>
+    <button class="view-btn" id="btn-daily" onclick="setView('daily')">每日</button>
+  </div>
+</header>
+
+<main>
+  <div class="last-updated" id="last-updated">讀取中...</div>
+
+  <div class="platform-tabs">
+    <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
+    <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
+    <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
+  </div>
+
+  <div id="app">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">讀取 Google Sheets 數據...</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const SHEET_ID = '1yC3TtIXVg377qBTsZjA5Yad5HxVRBwX6BE3S4nel9A0';
+const MONTHLY_GID = '0'; // 第一個工作表
+
+let allData = { monthly: [], daily: [] };
+let currentView = 'monthly';
+let currentPlatform = 'all';
+let charts = {};
+
+// 從 Google Sheets 公開 CSV 讀取
+async function fetchSheetData(gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('無法讀取試算表');
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+    return obj;
+  }).filter(row => row[headers[0]]); // 過濾空行
+}
+
+function numFmt(n) {
+  if (n >= 10000) return (n/10000).toFixed(1) + '萬';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+
+function getVal(row, key) {
+  return parseFloat(row[key]) || 0;
+}
+
+async function loadData() {
+  try {
+    const monthly = await fetchSheetData(MONTHLY_GID);
+    allData.monthly = monthly;
+
+    // 嘗試讀取第二個工作表（每日數據）
+    try {
+      const daily = await fetchSheetData('1');
+      allData.daily = daily;
+    } catch(e) {
+      allData.daily = [];
+    }
+
+    document.getElementById('last-updated').textContent =
+      `最後更新：${new Date().toLocaleString('zh-TW')}`;
+    render();
+  } catch(e) {
+    document.getElementById('app').innerHTML = `
+      <div class="error-msg">
+        ⚠️ 無法讀取數據：${e.message}<br>
+        請確認 Google Sheets 已設定為「任何人都可以檢視」
+      </div>`;
+  }
+}
+
+function render() {
+  const data = currentView === 'monthly' ? allData.monthly : allData.daily;
+
+  if (!data || data.length === 0) {
+    document.getElementById('app').innerHTML = `
+      <div class="empty">
+        📊 目前尚無${currentView === 'monthly' ? '每月' : '每日'}數據<br>
+        <small style="margin-top:8px;display:block">請先透過 n8n 匯入數據到 Google Sheets</small>
+      </div>`;
+    return;
+  }
+
+  // 偵測欄位
+  const headers = Object.keys(data[0]);
+  const hasFB = headers.some(h => h.includes('FB') || h.includes('fb') || h.includes('粉絲') || h.includes('互動'));
+  const hasIG = headers.some(h => h.includes('IG') || h.includes('ig') || h.includes('追蹤'));
+
+  // 取最新一筆
+  const latest = data[data.length - 1];
+  const prev = data.length > 1 ? data[data.length - 2] : null;
+
+  // 動態偵測欄位名稱
+  const colMap = detectColumns(headers);
+
+  // 建立 KPI
+  let kpis = [];
+  if (currentPlatform === 'all' || currentPlatform === 'fb') {
+    if (colMap.fb_fans) kpis.push({ label: 'FB 粉絲總數', val: getVal(latest, colMap.fb_fans), cls: 'fb', prev: prev ? getVal(prev, colMap.fb_fans) : null });
+    if (colMap.fb_reach) kpis.push({ label: 'FB 觸及人數', val: getVal(latest, colMap.fb_reach), cls: 'fb', prev: prev ? getVal(prev, colMap.fb_reach) : null });
+    if (colMap.fb_engage) kpis.push({ label: 'FB 貼文互動', val: getVal(latest, colMap.fb_engage), cls: 'fb', prev: prev ? getVal(prev, colMap.fb_engage) : null });
+    if (colMap.fb_views) kpis.push({ label: 'FB 影片觀看', val: getVal(latest, colMap.fb_views), cls: 'fb', prev: prev ? getVal(prev, colMap.fb_views) : null });
+  }
+  if (currentPlatform === 'all' || currentPlatform === 'ig') {
+    if (colMap.ig_followers) kpis.push({ label: 'IG 追蹤者', val: getVal(latest, colMap.ig_followers), cls: 'ig', prev: prev ? getVal(prev, colMap.ig_followers) : null });
+    if (colMap.ig_reach) kpis.push({ label: 'IG 觸及帳號', val: getVal(latest, colMap.ig_reach), cls: 'ig', prev: prev ? getVal(prev, colMap.ig_reach) : null });
+    if (colMap.ig_views) kpis.push({ label: 'IG 瀏覽次數', val: getVal(latest, colMap.ig_views), cls: 'ig', prev: prev ? getVal(prev, colMap.ig_views) : null });
+    if (colMap.ig_engage) kpis.push({ label: 'IG 互動次數', val: getVal(latest, colMap.ig_engage), cls: 'ig', prev: prev ? getVal(prev, colMap.ig_engage) : null });
+  }
+
+  const labels = data.map(r => r[headers[0]]);
+
+  const html = `
+    <div class="kpi-grid">
+      ${kpis.map(k => {
+        const diff = k.prev !== null ? k.val - k.prev : null;
+        const pct = diff !== null && k.prev ? ((diff/k.prev)*100).toFixed(1) : null;
+        return `<div class="kpi-card">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value ${k.cls}">${numFmt(k.val)}</div>
+          ${diff !== null ? `<div class="kpi-change ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${numFmt(Math.abs(diff))} ${pct ? `(${diff >= 0 ? '+' : ''}${pct}%)` : ''} vs 上期</div>` : '<div class="kpi-change">—</div>'}
+        </div>`;
+      }).join('')}
+      ${kpis.length === 0 ? '<div class="empty">請選擇平台或確認數據欄位名稱</div>' : ''}
+    </div>
+
+    <div class="charts-grid">
+      ${(currentPlatform === 'all' || currentPlatform === 'fb') && colMap.fb_reach ? `
+      <div class="chart-card">
+        <div class="chart-title">FB 觸及人數趨勢</div>
+        <div class="chart-sub">${currentView === 'monthly' ? '每月' : '每日'}觸及不重複人數</div>
+        <div class="chart-wrap"><canvas id="chart-fb-reach"></canvas></div>
+      </div>` : ''}
+
+      ${(currentPlatform === 'all' || currentPlatform === 'ig') && colMap.ig_reach ? `
+      <div class="chart-card">
+        <div class="chart-title">IG 觸及帳號趨勢</div>
+        <div class="chart-sub">${currentView === 'monthly' ? '每月' : '每日'}觸及帳號數</div>
+        <div class="chart-wrap"><canvas id="chart-ig-reach"></canvas></div>
+      </div>` : ''}
+
+      ${colMap.fb_engage && colMap.ig_engage ? `
+      <div class="chart-card full">
+        <div class="chart-title">互動數比較</div>
+        <div class="chart-sub">FB 貼文互動 vs IG 互動次數</div>
+        <div class="chart-wrap tall"><canvas id="chart-engage"></canvas></div>
+      </div>` : ''}
+
+      ${colMap.fb_fans || colMap.ig_followers ? `
+      <div class="chart-card full">
+        <div class="chart-title">粉絲 / 追蹤者成長</div>
+        <div class="chart-sub">各平台粉絲數量趨勢</div>
+        <div class="chart-wrap tall"><canvas id="chart-followers"></canvas></div>
+      </div>` : ''}
+    </div>
+  `;
+
+  // 銷毀舊圖表
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  document.getElementById('app').innerHTML = html;
+
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
+      y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } }
+    }
+  };
+
+  // FB 觸及折線圖
+  if (document.getElementById('chart-fb-reach') && colMap.fb_reach) {
+    charts['fb-reach'] = new Chart(document.getElementById('chart-fb-reach'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{ label: 'FB觸及', data: data.map(r => getVal(r, colMap.fb_reach)),
+          borderColor: '#1877f2', backgroundColor: 'rgba(24,119,242,0.1)',
+          fill: true, tension: 0.3, pointRadius: 3 }]
+      },
+      options: { ...chartDefaults }
+    });
+  }
+
+  // IG 觸及折線圖
+  if (document.getElementById('chart-ig-reach') && colMap.ig_reach) {
+    charts['ig-reach'] = new Chart(document.getElementById('chart-ig-reach'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{ label: 'IG觸及', data: data.map(r => getVal(r, colMap.ig_reach)),
+          borderColor: '#e1306c', backgroundColor: 'rgba(225,48,108,0.1)',
+          fill: true, tension: 0.3, pointRadius: 3 }]
+      },
+      options: { ...chartDefaults }
+    });
+  }
+
+  // 互動數長條圖
+  if (document.getElementById('chart-engage')) {
+    const datasets = [];
+    if (colMap.fb_engage) datasets.push({
+      label: 'FB互動', data: data.map(r => getVal(r, colMap.fb_engage)),
+      backgroundColor: 'rgba(24,119,242,0.7)', borderRadius: 4
+    });
+    if (colMap.ig_engage) datasets.push({
+      label: 'IG互動', data: data.map(r => getVal(r, colMap.ig_engage)),
+      backgroundColor: 'rgba(225,48,108,0.7)', borderRadius: 4
+    });
+    if (datasets.length > 0) {
+      charts['engage'] = new Chart(document.getElementById('chart-engage'), {
+        type: 'bar', data: { labels, datasets },
+        options: { ...chartDefaults }
+      });
+    }
+  }
+
+  // 粉絲成長折線圖
+  if (document.getElementById('chart-followers')) {
+    const datasets = [];
+    if (colMap.fb_fans) datasets.push({
+      label: 'FB粉絲', data: data.map(r => getVal(r, colMap.fb_fans)),
+      borderColor: '#1877f2', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3
+    });
+    if (colMap.ig_followers) datasets.push({
+      label: 'IG追蹤', data: data.map(r => getVal(r, colMap.ig_followers)),
+      borderColor: '#e1306c', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3
+    });
+    if (datasets.length > 0) {
+      charts['followers'] = new Chart(document.getElementById('chart-followers'), {
+        type: 'line', data: { labels, datasets },
+        options: { ...chartDefaults }
+      });
+    }
+  }
+}
+
+function detectColumns(headers) {
+  const map = {};
+  headers.forEach(h => {
+    const l = h.toLowerCase();
+    if (l.includes('fb') && (l.includes('粉絲') || l.includes('fans'))) map.fb_fans = h;
+    if (l.includes('fb') && (l.includes('觸及') || l.includes('reach'))) map.fb_reach = h;
+    if (l.includes('fb') && (l.includes('互動') || l.includes('engage'))) map.fb_engage = h;
+    if (l.includes('fb') && (l.includes('影片') || l.includes('video'))) map.fb_views = h;
+    if (l.includes('ig') && (l.includes('追蹤') || l.includes('follower'))) map.ig_followers = h;
+    if (l.includes('ig') && (l.includes('觸及') || l.includes('reach'))) map.ig_reach = h;
+    if (l.includes('ig') && (l.includes('瀏覽') || l.includes('view'))) map.ig_views = h;
+    if (l.includes('ig') && (l.includes('互動') || l.includes('interact'))) map.ig_engage = h;
+  });
+  return map;
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
+  document.getElementById('btn-daily').classList.toggle('active', v === 'daily');
+  render();
+}
+
+function setPlatform(p) {
+  currentPlatform = p;
+  document.querySelectorAll('.platform-tab').forEach(t => {
+    t.className = 'platform-tab';
+  });
+  document.getElementById(`tab-${p}`).className = `platform-tab active-${p}`;
+  render();
+}
+
+loadData();
+</script>
+</body>
+</html>
