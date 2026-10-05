@@ -10,18 +10,18 @@
 <style>
 
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1c2333;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --blue: #388bfd;
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #f0f3f7;
+    --border: #dfe4ea;
+    --text: #1f2328;
+    --text-muted: #656d76;
+    --blue: #0969da;
     --blue-dim: #1f4b8e;
-    --teal: #39d353;
+    --teal: #1a7f37;
     --purple: #a371f7;
-    --orange: #f78166;
-    --yellow: #e3b341;
+    --orange: #cf222e;
+    --yellow: #9a6700;
     --fb: #1877f2;
     --ig: #e1306c;
     --threads: #000000;
@@ -35,7 +35,7 @@
 
   header {
     position: sticky; top: env(safe-area-inset-top, 0px);
-    background: rgba(13,17,23,0.92);
+    background: rgba(255,255,255,0.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 0 24px;
@@ -139,6 +139,8 @@
   .section-title.ig { border-color: var(--ig); color: var(--ig); }
 
   /* ===== P0 新增樣式 ===== */
+  .kpi-card, .chart-card, .filter-bar, .table-wrap { box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+  .error-msg { background: rgba(207,34,46,0.06); }
   .header-right { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; text-align: right; }
 
   .filter-bar {
@@ -187,7 +189,7 @@
   .info:hover::after, .info:focus::after {
     content: attr(data-tip); position: absolute; right: 0; top: 22px; z-index: 50;
     width: 220px; padding: 8px 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;
-    background: #0b0f14; border: 1px solid var(--border); color: var(--text); white-space: normal;
+    background: #1f2328; border: 1px solid #1f2328; color: #ffffff; white-space: normal;
   }
 
   /* 趨勢圖 */
@@ -302,7 +304,7 @@ const csvUrl = q => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?
 // ---------- 指標定義 ----------
 // type: flow = 期間內可加總；snapshot = 取期末值，不可加總；ratio = 由分子/分母計算
 const PLATFORMS = [
-  { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.12)', prevColor: 'rgba(139,148,158,0.8)',
+  { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.10)', prevColor: 'rgba(101,109,118,0.7)',
     metrics: [
       { id: 'fb_fans', label: '粉絲總數', type: 'snapshot', def: '粉絲專頁總粉絲數（fan_count），取期末快照，不可跨月加總。' },
       { id: 'fb_reach', label: '觸及人數', type: 'flow', def: 'page_total_media_view_unique 每日值加總。同一人跨日會重複計算，不等於不重複總人數。' },
@@ -313,7 +315,7 @@ const PLATFORMS = [
       { id: 'fb_views', label: '影片觀看', type: 'flow', def: 'page_video_views 加總：影片被觀看的次數。' },
     ],
     todo: '貼文數、平均單篇互動、淨增粉絲（需 n8n 另抓貼文清單與取消追蹤數）' },
-  { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.12)', prevColor: 'rgba(139,148,158,0.8)',
+  { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.12)', prevColor: 'rgba(101,109,118,0.7)',
     metrics: [
       { id: 'ig_followers', label: '追蹤者數', type: 'snapshot', def: 'followers_count，取期末快照，不可跨月加總。' },
       { id: 'ig_reach', label: '觸及帳號', type: 'flow', def: 'reach 每日值加總。同一帳號跨日會重複計算。' },
@@ -687,7 +689,7 @@ function TrendChart(p, metrics, ctx) {
           datasets: [
             { label: `本期（${ctx.cur.label}）`, data: curVals.map(toY), borderColor: p.color, backgroundColor: single ? p.color : p.fill,
               fill: !single, tension: 0.3, pointRadius: 3, spanGaps: true, borderWidth: 2 },
-            { label: `上期（${ctx.prev.label}）`, data: prevVals.map(toY), borderColor: p.prevColor, backgroundColor: single ? 'rgba(139,148,158,0.5)' : 'transparent',
+            { label: `上期（${ctx.prev.label}）`, data: prevVals.map(toY), borderColor: p.prevColor, backgroundColor: single ? 'rgba(101,109,118,0.35)' : 'transparent',
               borderDash: [5, 4], tension: 0.3, pointRadius: 2, spanGaps: true, borderWidth: 2 },
           ],
         },
@@ -695,7 +697,7 @@ function TrendChart(p, metrics, ctx) {
           responsive: true, maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { labels: { color: '#8b949e', font: { size: 11 }, boxWidth: 14 } },
+            legend: { labels: { color: '#656d76', font: { size: 11 }, boxWidth: 14 } },
             tooltip: {
               callbacks: {
                 title: items => { const i = items[0].dataIndex; return `本期 ${cb[i]?.label || '—'}　vs　上期 ${pb[i]?.label || '—'}`; },
@@ -708,8 +710,8 @@ function TrendChart(p, metrics, ctx) {
             },
           },
           scales: {
-            x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
-            y: { beginAtZero: true, ticks: { color: '#8b949e', font: { size: 10 }, callback: v => sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(48,54,61,0.5)' } },
+            x: { ticks: { color: '#656d76', font: { size: 10 } }, grid: { color: 'rgba(208,215,222,0.6)' } },
+            y: { beginAtZero: true, ticks: { color: '#656d76', font: { size: 10 }, callback: v => sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(208,215,222,0.6)' } },
           },
         },
       });
