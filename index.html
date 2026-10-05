@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>資策會社群數據 Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+
   :root {
     --bg: #0d1117;
     --surface: #161b22;
@@ -29,7 +32,6 @@
   *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
   header {
     position: sticky; top: env(safe-area-inset-top, 0px);
@@ -135,6 +137,95 @@
   .kpi-card.year { background: var(--surface2); }
   .section-title.fb { border-color: var(--fb); color: var(--fb); }
   .section-title.ig { border-color: var(--ig); color: var(--ig); }
+
+  /* ===== P0 新增樣式 ===== */
+  .header-right { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; text-align: right; }
+
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 12px;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 6px; }
+  .filter-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.3px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    padding: 5px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted);
+    transition: all 0.15s; font-family: inherit;
+  }
+  .chip:hover:not(:disabled) { color: var(--text); }
+  .chip.active { background: rgba(56,139,253,0.15); border-color: var(--blue); color: var(--blue); }
+  .chip:disabled { opacity: 0.35; cursor: not-allowed; }
+  .platform-tabs { margin-bottom: 0; }
+  select.month-select {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit;
+  }
+  .custom-range { display: none; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+  .custom-range.show { display: flex; }
+
+  .period-caption { font-size: 12px; color: var(--text-muted); margin: 0 0 24px 2px; }
+  .period-caption b { color: var(--text); font-weight: 600; }
+
+  /* KPI 卡 */
+  .kpi-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .kpi-card { display: flex; flex-direction: column; min-height: 132px; }
+  .kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
+  .kpi-label { margin-bottom: 0; font-size: 12px; }
+  .kpi-value { font-size: 24px; cursor: default; }
+  .kpi-change { margin-top: 8px; font-size: 12px; font-weight: 500; }
+  .kpi-change .abs { color: var(--text-muted); font-weight: 400; margin-left: 4px; }
+  .kpi-change.flat { color: var(--text-muted); }
+  .spark-wrap { height: 32px; margin-top: auto; padding-top: 8px; }
+
+  .info {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border);
+    font-size: 10px; color: var(--text-muted); cursor: help; flex-shrink: 0;
+  }
+  .info:hover::after, .info:focus::after {
+    content: attr(data-tip); position: absolute; right: 0; top: 22px; z-index: 50;
+    width: 220px; padding: 8px 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;
+    background: #0b0f14; border: 1px solid var(--border); color: var(--text); white-space: normal;
+  }
+
+  /* 趨勢圖 */
+  .trend-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .trend-head .chart-sub { margin-bottom: 0; }
+
+  /* 尚缺資料提示 */
+  .todo-note {
+    font-size: 11px; color: var(--text-muted); border: 1px dashed var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-top: 4px; line-height: 1.6;
+  }
+  .todo-note b { color: var(--yellow); font-weight: 600; }
+
+  /* Top Posts */
+  .posts-section { margin-bottom: 40px; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  table.posts { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 720px; }
+  table.posts th, table.posts td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.posts th { font-size: 11px; color: var(--text-muted); font-weight: 500; background: var(--surface2); }
+  table.posts td.num, table.posts th.num { text-align: right; font-family: 'IBM Plex Mono', monospace; }
+  table.posts tr:last-child td { border-bottom: none; }
+  table.posts a { color: var(--blue); text-decoration: none; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag.fb { background: rgba(24,119,242,0.15); color: var(--fb); }
+  .tag.ig { background: rgba(225,48,108,0.15); color: var(--ig); }
+  .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .section-head .section-title { margin-bottom: 0; }
+  .section-title.all { border-color: var(--blue); color: var(--text); }
+
+  details.year-block { margin-top: 16px; }
+  details.year-block summary { font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 10px; }
+
+  @media (max-width: 768px) {
+    .filter-bar { gap: 12px; }
+    header { padding: 0 16px; }
+    .header-right { display: none; }
+  }
+
 </style>
 </head>
 <body>
@@ -147,20 +238,47 @@
       <div class="logo-sub">社群數據 Dashboard</div>
     </div>
   </div>
-  <div class="view-toggle">
-    <button class="view-btn active" id="btn-monthly" onclick="setView('monthly')">每月</button>
-    <button class="view-btn" id="btn-daily" onclick="setView('daily')">每日</button>
-  </div>
+  <div class="header-right" id="last-updated">讀取中...</div>
 </header>
 
 <main>
-  <div class="last-updated" id="last-updated">讀取中...</div>
-
-  <div class="platform-tabs">
-    <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
-    <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
-    <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-label">日期區間</span>
+      <div class="chip-row">
+        <button class="chip" data-period="last_7d" data-need-daily="1" onclick="setPeriod('last_7d')">近 7 天</button>
+        <button class="chip" data-period="last_30d" data-need-daily="1" onclick="setPeriod('last_30d')">近 30 天</button>
+        <button class="chip" data-period="this_month" onclick="setPeriod('this_month')">本月</button>
+        <button class="chip" data-period="last_month" onclick="setPeriod('last_month')">上月</button>
+        <button class="chip" data-period="last_3m" onclick="setPeriod('last_3m')">近 3 個月</button>
+        <button class="chip" data-period="last_6m" onclick="setPeriod('last_6m')">近 6 個月</button>
+        <button class="chip" data-period="ytd" onclick="setPeriod('ytd')">今年</button>
+        <button class="chip" data-period="custom" onclick="setPeriod('custom')">自訂</button>
+      </div>
+      <div class="custom-range" id="custom-range">
+        <select class="month-select" id="custom-from" onchange="setCustom()"></select>
+        <span>至</span>
+        <select class="month-select" id="custom-to" onchange="setCustom()"></select>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">平台</span>
+      <div class="platform-tabs">
+        <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
+        <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
+        <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">圖表粒度</span>
+      <div class="view-toggle">
+        <button class="view-btn chip" data-gran="day" onclick="setGran('day')">日</button>
+        <button class="view-btn chip" data-gran="week" onclick="setGran('week')">週</button>
+        <button class="view-btn chip active" data-gran="month" onclick="setGran('month')">月</button>
+      </div>
+    </div>
   </div>
+  <div class="period-caption" id="period-caption"></div>
 
   <div id="app">
     <div class="loading">
@@ -171,211 +289,44 @@
 </main>
 
 <script>
+// ============================================================
+// 資策會社群數據 Dashboard（P0 優化版）
+// 資料來源：Google Sheets（公開 CSV）
+//   - 月資料：第一個工作表（gid=0），每月一列
+//   - 每日資料：工作表「每日」（TODO：尚未建立，建立後自動啟用日/週粒度、近7天/近30天）
+//   - 貼文資料：工作表「貼文」（TODO：尚未建立，建立後自動啟用 Top Posts）
+// ============================================================
 const SHEET_ID = '1yC3TtIXVg377qBTsZjA5Yad5HxVRBwX6BE3S4nel9A0';
-const MONTHLY_GID = '0'; // 第一個工作表
+const csvUrl = q => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&${q}`;
 
-let allData = { monthly: [], daily: [] };
-let currentView = 'monthly';
-let currentPlatform = 'all';
-let charts = {};
+// ---------- 指標定義 ----------
+// type: flow = 期間內可加總；snapshot = 取期末值，不可加總；ratio = 由分子/分母計算
+const PLATFORMS = [
+  { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.12)', prevColor: 'rgba(139,148,158,0.8)',
+    metrics: [
+      { id: 'fb_fans', label: '粉絲總數', type: 'snapshot', def: '粉絲專頁總粉絲數（fan_count），取期末快照，不可跨月加總。' },
+      { id: 'fb_reach', label: '觸及人數', type: 'flow', def: 'page_total_media_view_unique 每日值加總。同一人跨日會重複計算，不等於不重複總人數。' },
+      { id: 'fb_engage', label: '貼文互動', type: 'flow', def: 'page_post_engagements 加總：貼文的按讚、留言、分享、點擊等互動次數。' },
+      { id: 'fb_er', label: '互動率', type: 'ratio', num: 'fb_engage', den: 'fb_reach', def: '貼文互動 ÷ 觸及人數。比較時以「百分點」呈現差異。' },
+      { id: 'fb_follows', label: '新增追蹤', type: 'flow', def: 'page_daily_follows 加總：期間內新增的追蹤數，未扣除取消追蹤，不等於淨增粉絲。' },
+      { id: 'fb_pageviews', label: '頁面瀏覽', type: 'flow', def: 'page_views_total 加總：粉絲專頁被瀏覽的次數。' },
+      { id: 'fb_views', label: '影片觀看', type: 'flow', def: 'page_video_views 加總：影片被觀看的次數。' },
+    ],
+    todo: '貼文數、平均單篇互動、淨增粉絲（需 n8n 另抓貼文清單與取消追蹤數）' },
+  { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.12)', prevColor: 'rgba(139,148,158,0.8)',
+    metrics: [
+      { id: 'ig_followers', label: '追蹤者數', type: 'snapshot', def: 'followers_count，取期末快照，不可跨月加總。' },
+      { id: 'ig_reach', label: '觸及帳號', type: 'flow', def: 'reach 每日值加總。同一帳號跨日會重複計算。' },
+      { id: 'ig_views', label: '瀏覽次數', type: 'flow', def: 'views：內容被播放或顯示的次數（約等同曝光）。' },
+      { id: 'ig_engage', label: '互動次數', type: 'flow', def: 'total_interactions：貼文、限動、Reels 的按讚、留言、分享、收藏等總數。' },
+      { id: 'ig_er', label: '互動率', type: 'ratio', num: 'ig_engage', den: 'ig_reach', def: '互動次數 ÷ 觸及帳號。比較時以「百分點」呈現差異。' },
+    ],
+    todo: '貼文數、平均單篇互動、淨增追蹤（需 n8n 另抓貼文清單與每日追蹤變化）' },
+];
+const METRIC = {};
+PLATFORMS.forEach(p => p.metrics.forEach(m => { METRIC[m.id] = { ...m, platform: p }; }));
 
-// 從 Google Sheets 公開 CSV 讀取
-async function fetchSheetData(gid) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('無法讀取試算表');
-  const text = await res.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-  return lines.slice(1).map(line => {
-    const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
-    return obj;
-  }).filter(row => row[headers[0]]); // 過濾空行
-}
-
-function numFmt(n) {
-  if (n >= 10000) return (n/10000).toFixed(1) + '萬';
-  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
-  return n.toLocaleString();
-}
-
-function getVal(row, key) {
-  if (!row) return 0;
-  return parseFloat(row[key]) || 0;
-}
-
-async function loadData() {
-  try {
-    const monthly = await fetchSheetData(MONTHLY_GID);
-    allData.monthly = monthly;
-
-    // 嘗試讀取第二個工作表（每日數據）
-    try {
-      const daily = await fetchSheetData('1');
-      allData.daily = daily;
-    } catch(e) {
-      allData.daily = [];
-    }
-
-    document.getElementById('last-updated').textContent =
-      `最後更新：${new Date().toLocaleString('zh-TW')}`;
-    render();
-  } catch(e) {
-    document.getElementById('app').innerHTML = `
-      <div class="error-msg">
-        ⚠️ 無法讀取數據：${e.message}<br>
-        請確認 Google Sheets 已設定為「任何人都可以檢視」
-      </div>`;
-  }
-}
-
-function render() {
-  const data = currentView === 'monthly' ? allData.monthly : allData.daily;
-
-  if (!data || data.length === 0) {
-    document.getElementById('app').innerHTML = `
-      <div class="empty">
-        📊 目前尚無${currentView === 'monthly' ? '每月' : '每日'}數據<br>
-        <small style="margin-top:8px;display:block">請先透過 n8n 匯入數據到 Google Sheets</small>
-      </div>`;
-    return;
-  }
-
-  const headers = Object.keys(data[0]);
-  const colMap = detectColumns(headers);
-  const labels = data.map(r => r[headers[0]]);
-
-  // 欄位有任何一筆數值才顯示
-  const hasData = key => key && data.some(r => String(r[key] ?? '').trim() !== '');
-
-  // 找某欄最後一筆有值的資料（快照型欄位用）
-  const latestWithValue = key => {
-    for (let i = data.length - 1; i >= 0; i--) {
-      if (String(data[i][key] ?? '').trim() !== '') return { cur: data[i], prev: data[i - 1] || null };
-    }
-    return { cur: null, prev: null };
-  };
-
-  const unit = currentView === 'monthly' ? '每月' : '每日';
-
-  const platforms = [
-    { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.1)', metrics: [
-      { key: colMap.fb_fans, label: '粉絲總數', sub: '當月快照', snapshot: true },
-      { key: colMap.fb_reach, label: '觸及人數', sub: `${unit}觸及不重複人數` },
-      { key: colMap.fb_engage, label: '貼文互動', sub: `${unit}貼文互動次數` },
-      { key: colMap.fb_pageviews, label: '頁面瀏覽', sub: `${unit}粉絲頁瀏覽次數` },
-      { key: colMap.fb_views, label: '影片觀看', sub: `${unit}影片觀看次數` },
-      { key: colMap.fb_follows, label: '新增追蹤', sub: `${unit}新增追蹤人數` },
-    ]},
-    { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.1)', metrics: [
-      { key: colMap.ig_followers, label: '追蹤者數', sub: '當月快照', snapshot: true },
-      { key: colMap.ig_reach, label: '觸及帳號', sub: `${unit}觸及帳號數` },
-      { key: colMap.ig_views, label: '瀏覽次數', sub: `${unit}內容瀏覽次數` },
-      { key: colMap.ig_engage, label: '互動次數', sub: `${unit}內容互動總數` },
-    ]},
-  ].filter(p => currentPlatform === 'all' || currentPlatform === p.id);
-
-  let html = '';
-  const chartJobs = [];
-
-  platforms.forEach(p => {
-    const metrics = p.metrics.filter(m => hasData(m.key));
-    if (metrics.length === 0) return;
-
-    const kpiHtml = metrics.map(m => {
-      const { cur, prev } = latestWithValue(m.key);
-      const val = getVal(cur, m.key);
-      const prevVal = prev ? getVal(prev, m.key) : null;
-      const diff = prevVal !== null ? val - prevVal : null;
-      const pct = diff !== null && prevVal ? ((diff / prevVal) * 100).toFixed(1) : null;
-      return `<div class="kpi-card">
-        <div class="kpi-label">${m.label}</div>
-        <div class="kpi-value ${p.id}">${numFmt(val)}</div>
-        ${diff !== null
-          ? `<div class="kpi-change ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${numFmt(Math.abs(diff))} ${pct ? `(${diff >= 0 ? '+' : ''}${pct}%)` : ''} vs 上期</div>`
-          : '<div class="kpi-change">無前期資料</div>'}
-      </div>`;
-    }).join('');
-
-    const chartHtml = metrics.map((m, i) => {
-      const id = `chart-${p.id}-${i}`;
-      chartJobs.push({ id, p, m });
-      return `<div class="chart-card">
-        <div class="chart-title">${m.label}趨勢</div>
-        <div class="chart-sub">${m.sub}</div>
-        <div class="chart-wrap"><canvas id="${id}"></canvas></div>
-      </div>`;
-    }).join('');
-
-    // 全年度累計（只在每月檢視顯示）
-    let yearHtml = '';
-    if (currentView === 'monthly') {
-      const year = String(labels[labels.length - 1]).slice(0, 4);
-      const yearRows = data.filter(r => String(r[headers[0]]).startsWith(year));
-      const first = yearRows[0]?.[headers[0]], last = yearRows[yearRows.length - 1]?.[headers[0]];
-      const cards = metrics.filter(m => !m.snapshot).map(m => {
-        const vals = yearRows.filter(r => String(r[m.key] ?? '').trim() !== '').map(r => getVal(r, m.key));
-        const total = vals.reduce((a, b) => a + b, 0);
-        const avg = vals.length ? Math.round(total / vals.length) : 0;
-        return `<div class="kpi-card year">
-          <div class="kpi-label">全年 ${m.label}</div>
-          <div class="kpi-value ${p.id}">${numFmt(total)}</div>
-          <div class="kpi-change">月平均 ${numFmt(avg)}</div>
-        </div>`;
-      }).join('');
-      if (cards) yearHtml = `
-        <div class="block-label">${year} 全年度累計（${first} ~ ${last}，共 ${yearRows.length} 個月）</div>
-        <div class="kpi-grid">${cards}</div>
-        <div class="block-label">最新一期</div>`;
-    }
-
-    html += `<section class="platform-section">
-      <div class="section-title ${p.id}">${p.name}</div>
-      ${yearHtml}
-      <div class="kpi-grid">${kpiHtml}</div>
-      <div class="charts-grid">${chartHtml}</div>
-    </section>`;
-  });
-
-  if (!html) html = '<div class="empty">請確認數據欄位名稱</div>';
-
-  Object.values(charts).forEach(c => c.destroy());
-  charts = {};
-  document.getElementById('app').innerHTML = html;
-
-  const chartDefaults = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
-      y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } }
-    }
-  };
-
-  chartJobs.forEach(({ id, p, m }) => {
-    charts[id] = new Chart(document.getElementById(id), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: m.label,
-          data: data.map(r => String(r[m.key] ?? '').trim() === '' ? null : getVal(r, m.key)),
-          borderColor: p.color, backgroundColor: p.fill,
-          fill: true, tension: 0.3, pointRadius: 3, spanGaps: true
-        }]
-      },
-      options: { ...chartDefaults }
-    });
-  });
-}
-
+// 試算表欄名 → 指標 id
 function detectColumns(headers) {
   const map = {};
   headers.forEach(h => {
@@ -398,23 +349,477 @@ function detectColumns(headers) {
   return map;
 }
 
-function setView(v) {
-  currentView = v;
-  document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
-  document.getElementById('btn-daily').classList.toggle('active', v === 'daily');
-  render();
-}
+// ---------- 狀態 ----------
+const state = {
+  period: 'last_3m', gran: 'month', platform: 'all',
+  customFrom: null, customTo: null,
+  trendMetric: { fb: 'fb_reach', ig: 'ig_reach' },
+  postSort: 'er',
+};
+const DATA = { monthly: [], daily: [], posts: [], hasPosts: false };
+let charts = {};
 
-function setPlatform(p) {
-  currentPlatform = p;
-  document.querySelectorAll('.platform-tab').forEach(t => {
-    t.className = 'platform-tab';
+// ---------- 工具 ----------
+function parseCSV(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+      else if (c === '"') q = false;
+      else cur += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(cur); rows.push(row); row = []; cur = '';
+    } else cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  if (rows.length < 2) return { headers: [], rows: [] };
+  const headers = rows[0].map(h => h.trim());
+  const out = rows.slice(1).filter(r => r.some(v => v.trim() !== '')).map(r => {
+    const o = {}; headers.forEach((h, i) => { o[h] = (r[i] ?? '').trim(); }); return o;
   });
-  document.getElementById(`tab-${p}`).className = `platform-tab active-${p}`;
-  render();
+  return { headers, rows: out };
+}
+const toNum = v => {
+  if (v === undefined || v === null) return null;
+  const s = String(v).replace(/,/g, '').trim();
+  if (s === '') return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+};
+function parseMonth(s) {
+  const m = String(s).match(/(\d{4})[-\/.](\d{1,2})/);
+  return m ? new Date(+m[1], +m[2] - 1, 1) : null;
+}
+function parseDay(s) {
+  const m = String(s).match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+}
+const pad = n => String(n).padStart(2, '0');
+const monthKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addMonths = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, 1);
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const monthEnd = d => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+const inRange = (d, r) => d >= r.start && d <= r.end;
+
+function fmtNum(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const a = Math.abs(n);
+  if (a >= 1e8) return (n / 1e8).toFixed(1) + '億';
+  if (a >= 1e4) return (n / 1e4).toFixed(1) + '萬';
+  return Math.round(n).toLocaleString('zh-TW');
+}
+const fmtFull = n => (n === null || n === undefined || isNaN(n)) ? '—' : Number(n).toLocaleString('zh-TW', { maximumFractionDigits: 2 });
+const fmtPct = r => (r === null || r === undefined || isNaN(r)) ? '—' : (r * 100).toFixed(1) + '%';
+const fmtVal = (m, v) => m.type === 'ratio' ? fmtPct(v) : fmtNum(v);
+const fmtValFull = (m, v) => m.type === 'ratio' ? (v === null ? '—' : (v * 100).toFixed(2) + '%') : fmtFull(v);
+
+// ---------- 讀取資料 ----------
+async function fetchSheet(q) {
+  const res = await fetch(csvUrl(q));
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseCSV(await res.text());
+}
+function normalize(parsed, kind) {
+  const { headers, rows } = parsed;
+  if (!headers.length) return [];
+  const map = detectColumns(headers);
+  const first = headers[0];
+  return rows.map(r => {
+    const date = kind === 'day' ? parseDay(r[first]) : parseMonth(r[first]);
+    if (!date) return null;
+    const vals = {};
+    Object.keys(map).forEach(id => { vals[id] = toNum(r[map[id]]); });
+    return { date, key: kind === 'day' ? dayKey(date) : monthKey(date), vals };
+  }).filter(Boolean).sort((a, b) => a.date - b.date);
+}
+// 貼文工作表預期欄位（TODO：n8n 尚未寫入）
+// 貼文ID, 平台(FB/IG), 日期, 標題, 觸及, 互動, 留言, 分享, 網址
+function normalizePosts(parsed) {
+  const { headers, rows } = parsed;
+  const find = (...keys) => headers.find(h => keys.some(k => h.toLowerCase().includes(k)));
+  const cPlat = find('平台', 'platform'), cDate = find('日期', 'date'), cTitle = find('標題', '內容', 'title', 'caption');
+  const cReach = find('觸及', 'reach'), cEng = find('互動', 'engage', 'interaction');
+  const cCom = find('留言', 'comment'), cShare = find('分享', 'share'), cUrl = find('網址', 'url', 'link'), cId = find('貼文id', 'post_id', 'id');
+  if (!cPlat || !cDate || !cReach || !cEng) return [];
+  return rows.map(r => {
+    const date = parseDay(r[cDate]); if (!date) return null;
+    const p = String(r[cPlat]).toLowerCase();
+    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : null;
+    if (!platform) return null;
+    const reach = toNum(r[cReach]), engage = toNum(r[cEng]);
+    return {
+      id: cId ? r[cId] : '', platform, date, title: cTitle ? r[cTitle] : '(無標題)',
+      reach, engage, comments: cCom ? toNum(r[cCom]) : null, shares: cShare ? toNum(r[cShare]) : null,
+      url: cUrl ? r[cUrl] : '', er: reach ? engage / reach : null,
+    };
+  }).filter(Boolean);
 }
 
-loadData();
+async function loadData() {
+  const [m, d, p] = await Promise.allSettled([
+    fetchSheet('gid=0'),
+    fetchSheet('sheet=' + encodeURIComponent('每日')),
+    fetchSheet('sheet=' + encodeURIComponent('貼文')),
+  ]);
+  if (m.status !== 'fulfilled') {
+    showError(`無法讀取數據：${m.reason?.message || m.reason}`, '請確認 Google Sheets 已設定為「知道連結的任何人都能檢視」。');
+    return;
+  }
+  DATA.monthly = normalize(m.value, 'month');
+  // gviz 找不到工作表時會回傳第一個工作表，所以要用欄名驗證
+  if (d.status === 'fulfilled' && /日期|date/i.test(d.value.headers[0] || '')) DATA.daily = normalize(d.value, 'day');
+  if (p.status === 'fulfilled' && (p.value.headers || []).some(h => /平台|platform/i.test(h))) {
+    DATA.posts = normalizePosts(p.value); DATA.hasPosts = true;
+  }
+  if (!DATA.monthly.length) {
+    document.getElementById('app').innerHTML = `<div class="empty">📊 目前尚無月資料<br><small style="margin-top:8px;display:block">請先透過 n8n 匯入數據到 Google Sheets</small></div>`;
+    return;
+  }
+  const last = DATA.monthly[DATA.monthly.length - 1].key;
+  document.getElementById('last-updated').textContent =
+    `資料更新至 ${last}｜月資料 ${DATA.monthly.length} 筆｜每日資料 ${DATA.daily.length ? DATA.daily.length + ' 筆' : '尚無'}｜貼文資料 ${DATA.hasPosts ? DATA.posts.length + ' 筆' : '尚無'}`;
+  // 自訂區間預設：近 3 個月
+  state.customTo = last;
+  state.customFrom = monthKey(addMonths(DATA.monthly[DATA.monthly.length - 1].date, -2));
+  buildMonthSelects();
+  syncControls();
+  render();
+}
+function showError(msg, hint) {
+  document.getElementById('app').innerHTML = `<div class="error-msg">⚠️ ${msg}<br>${hint || ''}</div>`;
+  document.getElementById('last-updated').textContent = '讀取失敗';
+}
+
+// ---------- 期間計算 ----------
+const PERIOD_LABEL = {
+  this_month: '本月', last_month: '上月', last_3m: '近 3 個月', last_6m: '近 6 個月',
+  ytd: '今年', last_7d: '近 7 天', last_30d: '近 30 天', custom: '自訂',
+};
+function resolvePeriod() {
+  const hasDaily = DATA.daily.length > 0;
+  const latestM = DATA.monthly[DATA.monthly.length - 1].date;
+  const mRange = (startM, n) => ({ start: startM, end: monthEnd(addMonths(startM, n - 1)), n });
+  const mLabel = r => r.n === 1 ? monthKey(r.start) : `${monthKey(r.start)} ~ ${monthKey(r.end)}`;
+  let cur, prev, unit = 'month';
+  switch (state.period) {
+    case 'this_month': cur = mRange(latestM, 1); break;
+    case 'last_month': cur = mRange(addMonths(latestM, -1), 1); break;
+    case 'last_3m': cur = mRange(addMonths(latestM, -2), 3); break;
+    case 'last_6m': cur = mRange(addMonths(latestM, -5), 6); break;
+    case 'ytd': { const s = new Date(latestM.getFullYear(), 0, 1); cur = mRange(s, latestM.getMonth() + 1); break; }
+    case 'custom': {
+      let a = parseMonth(state.customFrom), b = parseMonth(state.customTo);
+      if (a > b) [a, b] = [b, a];
+      cur = mRange(a, (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + 1); break;
+    }
+    case 'last_7d': case 'last_30d': {
+      if (!hasDaily) { state.period = 'last_3m'; return resolvePeriod(); }
+      unit = 'day';
+      const n = state.period === 'last_7d' ? 7 : 30;
+      const latestD = DATA.daily[DATA.daily.length - 1].date;
+      cur = { start: addDays(latestD, -(n - 1)), end: latestD, n };
+      prev = { start: addDays(cur.start, -n), end: addDays(cur.start, -1), n };
+      const dl = r => `${dayKey(r.start)} ~ ${dayKey(r.end)}`;
+      return { cur: { ...cur, label: dl(cur) }, prev: { ...prev, label: dl(prev) }, unit };
+    }
+  }
+  prev = mRange(addMonths(cur.start, -cur.n), cur.n);
+  return { cur: { ...cur, label: mLabel(cur) }, prev: { ...prev, label: mLabel(prev) }, unit };
+}
+
+// ---------- 彙總 ----------
+function aggregate(rows, m) {
+  if (m.type === 'ratio') {
+    const n = aggregate(rows, METRIC[m.num]), d = aggregate(rows, METRIC[m.den]);
+    return (n === null || !d) ? null : n / d;
+  }
+  const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null && v !== undefined);
+  if (!vals.length) return null;
+  return m.type === 'snapshot' ? vals[vals.length - 1] : vals.reduce((a, b) => a + b, 0);
+}
+// 期間總值：月期間用月資料，日期間用每日資料
+function periodRows(range, unit) {
+  const src = unit === 'day' ? DATA.daily : DATA.monthly;
+  return src.filter(r => inRange(r.date, range));
+}
+// 欄位是否有任何資料（決定要不要顯示）
+function hasMetric(m) {
+  if (m.type === 'ratio') return hasMetric(METRIC[m.num]) && hasMetric(METRIC[m.den]);
+  return DATA.monthly.some(r => r.vals[m.id] !== null && r.vals[m.id] !== undefined)
+      || DATA.daily.some(r => r.vals[m.id] !== null && r.vals[m.id] !== undefined);
+}
+// 比較：處理 null、0、無前期
+function compare(m, cur, prev) {
+  if (cur === null || prev === null) return { kind: 'none' };
+  if (m.type === 'ratio') {
+    const pp = (cur - prev) * 100;
+    if (Math.abs(pp) < 0.005) return { kind: 'flat', text: '持平' };
+    const rel = prev ? (cur - prev) / Math.abs(prev) : null;
+    return { kind: pp > 0 ? 'up' : 'down', text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)} 個百分點`, abs: rel !== null ? `(${rel > 0 ? '+' : ''}${(rel * 100).toFixed(1)}%)` : '' };
+  }
+  const diff = cur - prev;
+  if (diff === 0) return { kind: 'flat', text: '持平' };
+  if (prev === 0) return { kind: diff > 0 ? 'up' : 'down', text: '前期為 0', abs: `${diff > 0 ? '+' : ''}${fmtNum(diff)}` };
+  const pct = diff / Math.abs(prev) * 100;
+  return { kind: diff > 0 ? 'up' : 'down', text: `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`, abs: `${diff > 0 ? '+' : '−'}${fmtNum(Math.abs(diff))}` };
+}
+// 依粒度切 bucket
+function buckets(range, unit) {
+  const useMonthly = state.gran === 'month' && unit === 'month';
+  if (useMonthly) {
+    const out = [];
+    for (let d = new Date(range.start); d <= range.end; d = addMonths(d, 1)) {
+      const k = monthKey(d);
+      out.push({ label: k, rows: DATA.monthly.filter(r => r.key === k) });
+    }
+    return out;
+  }
+  const rows = DATA.daily.filter(r => inRange(r.date, range));
+  const groups = new Map();
+  rows.forEach(r => {
+    let k;
+    if (state.gran === 'day') k = dayKey(r.date);
+    else if (state.gran === 'week') { const mon = addDays(r.date, -((r.date.getDay() + 6) % 7)); k = `${dayKey(mon)} 週`; }
+    else k = monthKey(r.date);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  });
+  return [...groups.entries()].map(([label, rows]) => ({ label, rows }));
+}
+
+// ---------- 控制項 ----------
+function buildMonthSelects() {
+  const opts = DATA.monthly.map(r => `<option value="${r.key}">${r.key}</option>`).join('');
+  ['from', 'to'].forEach(k => {
+    const el = document.getElementById('custom-' + k);
+    el.innerHTML = opts;
+    el.value = k === 'from' ? state.customFrom : state.customTo;
+  });
+}
+function syncControls() {
+  const hasDaily = DATA.daily.length > 0;
+  document.querySelectorAll('[data-period]').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === state.period);
+    if (b.dataset.needDaily) { b.disabled = !hasDaily; b.title = hasDaily ? '' : '需要每日資料（尚未建立「每日」工作表）'; }
+  });
+  document.querySelectorAll('[data-gran]').forEach(b => {
+    b.classList.toggle('active', b.dataset.gran === state.gran);
+    if (b.dataset.gran !== 'month') { b.disabled = !hasDaily; b.title = hasDaily ? '' : '需要每日資料（尚未建立「每日」工作表）'; }
+  });
+  document.getElementById('custom-range').classList.toggle('show', state.period === 'custom');
+  ['all', 'fb', 'ig'].forEach(p => {
+    document.getElementById('tab-' + p).className = 'platform-tab' + (state.platform === p ? ' active-' + p : '');
+  });
+}
+function setPeriod(p) {
+  state.period = p;
+  if ((p === 'last_7d' || p === 'last_30d') && state.gran === 'month') state.gran = 'day';
+  syncControls(); render();
+}
+function setGran(g) { state.gran = g; syncControls(); render(); }
+function setPlatform(p) { state.platform = p; syncControls(); render(); }
+function setCustom() {
+  state.customFrom = document.getElementById('custom-from').value;
+  state.customTo = document.getElementById('custom-to').value;
+  render();
+}
+function setTrendMetric(pid, mid) { state.trendMetric[pid] = mid; render(); }
+function setPostSort(s) { state.postSort = s; render(); }
+
+// ---------- 元件：KpiCard ----------
+function KpiCard(p, m, ctx, sparkId) {
+  const cur = aggregate(periodRows(ctx.cur, ctx.unit), m);
+  const prev = aggregate(periodRows(ctx.prev, ctx.unit), m);
+  const c = compare(m, cur, prev);
+  const arrow = { up: '↑', down: '↓', flat: '→' }[c.kind] || '';
+  const change = c.kind === 'none'
+    ? '<div class="kpi-change flat">— 無前期資料</div>'
+    : `<div class="kpi-change ${c.kind}">${arrow} ${c.text}${c.abs ? `<span class="abs">${c.abs}</span>` : ''} <span class="abs">較上期</span></div>`;
+  const note = m.type === 'snapshot' ? '（期末）' : '';
+  return `<div class="kpi-card">
+    <div class="kpi-head"><span class="kpi-label">${m.label}${note}</span><span class="info" tabindex="0" data-tip="${m.def}">i</span></div>
+    <div class="kpi-value ${p.id}" title="${fmtValFull(m, cur)}">${fmtVal(m, cur)}</div>
+    ${change}
+    <div class="spark-wrap"><canvas id="${sparkId}"></canvas></div>
+  </div>`;
+}
+// sparkline：期間結束前最近 8 個月
+function sparkSeries(m, ctx) {
+  const endKey = monthKey(ctx.cur.end);
+  const idx = DATA.monthly.findIndex(r => r.key === endKey);
+  const upto = idx >= 0 ? DATA.monthly.slice(0, idx + 1) : DATA.monthly.filter(r => r.date <= ctx.cur.end);
+  return upto.slice(-8).map(r => ({ label: r.key, v: aggregate([r], m) }));
+}
+
+// ---------- 元件：TrendChart ----------
+function TrendChart(p, metrics, ctx) {
+  const sel = metrics.find(m => m.id === state.trendMetric[p.id]) || metrics.find(m => m.type !== 'snapshot') || metrics[0];
+  state.trendMetric[p.id] = sel.id;
+  const chips = metrics.filter(m => m.type !== 'snapshot').map(m =>
+    `<button class="chip ${m.id === sel.id ? 'active' : ''}" onclick="setTrendMetric('${p.id}','${m.id}')">${m.label}</button>`).join('');
+  const granLabel = { day: '每日', week: '每週', month: '每月' }[state.gran];
+  return {
+    html: `<div class="chart-card full">
+      <div class="trend-head">
+        <div><div class="chart-title">${sel.label}趨勢｜本期 vs 上期</div>
+        <div class="chart-sub">${granLabel}｜本期 ${ctx.cur.label}　上期 ${ctx.prev.label}</div></div>
+        <div class="chip-row">${chips}</div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="trend-${p.id}"></canvas></div>
+    </div>`,
+    draw: () => {
+      const cb = buckets(ctx.cur, ctx.unit), pb = buckets(ctx.prev, ctx.unit);
+      const n = Math.max(cb.length, pb.length);
+      const curVals = Array.from({ length: n }, (_, i) => cb[i] ? aggregate(cb[i].rows, sel) : null);
+      const prevVals = Array.from({ length: n }, (_, i) => pb[i] ? aggregate(pb[i].rows, sel) : null);
+      const toY = v => v === null ? null : (sel.type === 'ratio' ? +(v * 100).toFixed(2) : v);
+      const single = n <= 1;
+      const labels = Array.from({ length: n }, (_, i) => cb[i]?.label || `第 ${i + 1} 期`);
+      charts['trend-' + p.id] = new Chart(document.getElementById('trend-' + p.id), {
+        type: single ? 'bar' : 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: `本期（${ctx.cur.label}）`, data: curVals.map(toY), borderColor: p.color, backgroundColor: single ? p.color : p.fill,
+              fill: !single, tension: 0.3, pointRadius: 3, spanGaps: true, borderWidth: 2 },
+            { label: `上期（${ctx.prev.label}）`, data: prevVals.map(toY), borderColor: p.prevColor, backgroundColor: single ? 'rgba(139,148,158,0.5)' : 'transparent',
+              borderDash: [5, 4], tension: 0.3, pointRadius: 2, spanGaps: true, borderWidth: 2 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: '#8b949e', font: { size: 11 }, boxWidth: 14 } },
+            tooltip: {
+              callbacks: {
+                title: items => { const i = items[0].dataIndex; return `本期 ${cb[i]?.label || '—'}　vs　上期 ${pb[i]?.label || '—'}`; },
+                label: c => `${c.datasetIndex === 0 ? '本期' : '上期'}：${fmtValFull(sel, c.datasetIndex === 0 ? curVals[c.dataIndex] : prevVals[c.dataIndex])}`,
+                afterBody: items => {
+                  const i = items[0].dataIndex, r = compare(sel, curVals[i] ?? null, prevVals[i] ?? null);
+                  return r.kind === 'none' ? '差異：無比較資料' : `差異：${r.text} ${r.abs || ''}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
+            y: { beginAtZero: true, ticks: { color: '#8b949e', font: { size: 10 }, callback: v => sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(48,54,61,0.5)' } },
+          },
+        },
+      });
+    },
+  };
+}
+
+// ---------- 元件：YearSummary（全年度累計，沿用前版需求） ----------
+function YearSummary(p, metrics) {
+  const latest = DATA.monthly[DATA.monthly.length - 1].date;
+  const year = latest.getFullYear();
+  const rows = DATA.monthly.filter(r => r.date.getFullYear() === year);
+  const cards = metrics.filter(m => m.type === 'flow').map(m => {
+    const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null);
+    const total = vals.reduce((a, b) => a + b, 0);
+    const avg = vals.length ? total / vals.length : null;
+    return `<div class="kpi-card year" style="min-height:auto">
+      <div class="kpi-head"><span class="kpi-label">全年 ${m.label}</span></div>
+      <div class="kpi-value ${p.id}" title="${fmtFull(total)}">${fmtNum(total)}</div>
+      <div class="kpi-change flat">月平均 ${fmtNum(avg)}</div></div>`;
+  }).join('');
+  if (!cards) return '';
+  return `<details class="year-block" open><summary>${year} 全年度累計（${rows[0].key} ~ ${rows[rows.length - 1].key}，共 ${rows.length} 個月）</summary>
+    <div class="kpi-grid">${cards}</div></details>`;
+}
+
+// ---------- 元件：TopPostsTable ----------
+const POST_SORTS = [
+  { id: 'er', label: '互動率最高', fn: (a, b) => (b.er ?? -1) - (a.er ?? -1) },
+  { id: 'reach', label: '觸及最高', fn: (a, b) => (b.reach ?? -1) - (a.reach ?? -1) },
+  { id: 'comments', label: '留言最多', fn: (a, b) => (b.comments ?? -1) - (a.comments ?? -1) },
+  { id: 'shares', label: '分享最多', fn: (a, b) => (b.shares ?? -1) - (a.shares ?? -1) },
+  { id: 'worst', label: '最差表現', fn: (a, b) => (a.er ?? Infinity) - (b.er ?? Infinity) },
+];
+function TopPostsTable(ctx) {
+  const chips = POST_SORTS.map(s => `<button class="chip ${s.id === state.postSort ? 'active' : ''}" onclick="setPostSort('${s.id}')" ${DATA.hasPosts ? '' : 'disabled'}>${s.label}</button>`).join('');
+  const head = `<div class="section-head"><div class="section-title all">Top Posts 內容排行</div><div class="chip-row">${chips}</div></div>`;
+  if (!DATA.hasPosts) {
+    return `<section class="posts-section">${head}
+      <div class="todo-note"><b>尚缺貼文層級資料。</b>目前試算表只有每月加總，沒有單篇貼文數據，所以排行先保留版面。<br>
+      TODO：在試算表新增工作表「貼文」，欄位為：貼文ID、平台（FB/IG）、日期（YYYY-MM-DD）、標題、觸及、互動、留言、分享、網址。n8n 寫入後這裡會自動顯示，並跟著期間與平台篩選。</div></section>`;
+  }
+  const list = DATA.posts.filter(x => inRange(x.date, ctx.cur) && (state.platform === 'all' || x.platform === state.platform));
+  if (!list.length) return `<section class="posts-section">${head}<div class="empty">本期間沒有貼文資料</div></section>`;
+  const sorted = [...list].sort(POST_SORTS.find(s => s.id === state.postSort).fn).slice(0, 10);
+  const rows = sorted.map((x, i) => `<tr>
+    <td>${i + 1}</td>
+    <td>${x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${x.title || '(無標題)'}</a>` : (x.title || '(無標題)')}</td>
+    <td><span class="tag ${x.platform}">${x.platform.toUpperCase()}</span></td>
+    <td>${dayKey(x.date)}</td>
+    <td class="num" title="${fmtFull(x.reach)}">${fmtNum(x.reach)}</td>
+    <td class="num" title="${fmtFull(x.engage)}">${fmtNum(x.engage)}</td>
+    <td class="num">${fmtPct(x.er)}</td></tr>`).join('');
+  return `<section class="posts-section">${head}<div class="table-wrap"><table class="posts">
+    <thead><tr><th>排名</th><th>貼文 / 標題</th><th>平台</th><th>日期</th><th class="num">觸及</th><th class="num">互動數</th><th class="num">互動率</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></section>`;
+}
+
+// ---------- 主畫面 ----------
+function render() {
+  if (!DATA.monthly.length) return;
+  const ctx = resolvePeriod();
+  syncControls();
+  document.getElementById('period-caption').innerHTML =
+    `本期 <b>${ctx.cur.label}</b>　對比上期 <b>${ctx.prev.label}</b>　｜流量類指標為期間加總，粉絲與追蹤者取期末值`;
+
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+  const jobs = [];
+  let html = '';
+
+  PLATFORMS.filter(p => state.platform === 'all' || state.platform === p.id).forEach(p => {
+    const metrics = p.metrics.filter(hasMetric);
+    if (!metrics.length) return;
+    const kpis = metrics.map((m, i) => {
+      const sid = `spark-${p.id}-${i}`;
+      jobs.push(() => drawSpark(sid, p, m, ctx));
+      return KpiCard(p, m, ctx, sid);
+    }).join('');
+    const trend = TrendChart(p, metrics, ctx);
+    jobs.push(trend.draw);
+    html += `<section class="platform-section">
+      <div class="section-title ${p.id}">${p.name}</div>
+      <div class="kpi-grid">${kpis}</div>
+      <div class="charts-grid">${trend.html}</div>
+      ${YearSummary(p, metrics)}
+      <div class="todo-note"><b>尚缺資料：</b>${p.todo}${metrics.some(m => m.type === 'snapshot') ? '' : '；粉絲／追蹤者快照尚未寫入，有資料後會自動出現'}</div>
+    </section>`;
+  });
+  html += TopPostsTable(ctx);
+
+  document.getElementById('app').innerHTML = html || '<div class="empty">沒有可顯示的資料，請確認試算表欄位名稱</div>';
+  jobs.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+}
+function drawSpark(id, p, m, ctx) {
+  const s = sparkSeries(m, ctx);
+  if (s.filter(x => x.v !== null).length < 2) return;
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: s.map(x => x.label), datasets: [{ data: s.map(x => x.v), borderColor: p.color, borderWidth: 1.5, pointRadius: 0, tension: 0.35, fill: false, spanGaps: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: true, displayColors: false, callbacks: { label: c => fmtValFull(m, c.raw) } } },
+      scales: { x: { display: false }, y: { display: false } },
+    },
+  });
+}
+
+loadData().catch(e => showError(`發生錯誤：${e.message}`));
+
 </script>
 </body>
 </html>
