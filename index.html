@@ -218,6 +218,12 @@
   .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
   .section-head .section-title { margin-bottom: 0; }
   .section-title.all { border-color: var(--blue); color: var(--text); }
+  .post-cell { display: flex; align-items: center; gap: 12px; }
+  .post-cell a, .post-cell span { line-height: 1.5; }
+  .thumb { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; flex-shrink: 0; display: block; border: 1px solid var(--border); background: var(--surface2); }
+  .thumb.ph { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .thumb.ph.fb { color: var(--fb); background: rgba(24,119,242,0.08); }
+  .thumb.ph.ig { color: var(--ig); background: rgba(225,48,108,0.08); }
 
   details.year-block { margin-top: 16px; }
   details.year-block summary { font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 10px; }
@@ -446,7 +452,8 @@ function normalizePosts(parsed) {
   const find = (...keys) => headers.find(h => keys.some(k => h.toLowerCase().includes(k)));
   const cPlat = find('平台', 'platform'), cDate = find('日期', 'date'), cTitle = find('標題', '內容', 'title', 'caption');
   const cReach = find('觸及', 'reach'), cEng = find('互動', 'engage', 'interaction');
-  const cCom = find('留言', 'comment'), cShare = find('分享', 'share'), cUrl = find('網址', 'url', 'link'), cId = find('貼文id', 'post_id', 'id');
+  const cCom = find('留言', 'comment'), cShare = find('分享', 'share'), cUrl = find('網址', 'url', 'link'), cId = find('貼文id', 'post_id');
+  const cImg = find('圖片', 'image', 'picture', 'thumbnail');
   if (!cPlat || !cDate || !cReach || !cEng) return [];
   return rows.map(r => {
     const date = parseDay(r[cDate]); if (!date) return null;
@@ -457,7 +464,7 @@ function normalizePosts(parsed) {
     return {
       id: cId ? r[cId] : '', platform, date, title: cTitle ? r[cTitle] : '(無標題)',
       reach, engage, comments: cCom ? toNum(r[cCom]) : null, shares: cShare ? toNum(r[cShare]) : null,
-      url: cUrl ? r[cUrl] : '', er: reach ? engage / reach : null,
+      url: cUrl ? r[cUrl] : '', img: cImg ? r[cImg] : '', er: reach ? engage / reach : null,
     };
   }).filter(Boolean);
 }
@@ -746,20 +753,28 @@ const POST_SORTS = [
   { id: 'shares', label: '分享最多', fn: (a, b) => (b.shares ?? -1) - (a.shares ?? -1) },
   { id: 'worst', label: '最差表現', fn: (a, b) => (a.er ?? Infinity) - (b.er ?? Infinity) },
 ];
+// 貼文縮圖：Meta 的圖片網址會過期，載入失敗就顯示平台色塊
+function Thumb(x) {
+  const ph = `<div class="thumb ph ${x.platform}">${x.platform.toUpperCase()}</div>`;
+  if (!x.img) return ph;
+  const img = `<img class="thumb" src="${x.img}" alt="" loading="lazy" referrerpolicy="no-referrer"
+    onerror="this.outerHTML='<div class=&quot;thumb ph ${x.platform}&quot;>${x.platform.toUpperCase()}</div>'">`;
+  return x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${img}</a>` : img;
+}
 function TopPostsTable(ctx) {
   const chips = POST_SORTS.map(s => `<button class="chip ${s.id === state.postSort ? 'active' : ''}" onclick="setPostSort('${s.id}')" ${DATA.hasPosts ? '' : 'disabled'}>${s.label}</button>`).join('');
   const head = `<div class="section-head"><div class="section-title all">Top Posts 內容排行</div><div class="chip-row">${chips}</div></div>`;
   if (!DATA.hasPosts) {
     return `<section class="posts-section">${head}
       <div class="todo-note"><b>尚缺貼文層級資料。</b>目前試算表只有每月加總，沒有單篇貼文數據，所以排行先保留版面。<br>
-      TODO：在試算表新增工作表「貼文」，欄位為：貼文ID、平台（FB/IG）、日期（YYYY-MM-DD）、標題、觸及、互動、留言、分享、網址。n8n 寫入後這裡會自動顯示，並跟著期間與平台篩選。</div></section>`;
+      TODO：在試算表新增工作表「貼文」，欄位為：貼文ID、平台（FB/IG）、日期（YYYY-MM-DD）、標題、觸及、互動、留言、分享、網址、圖片。n8n 寫入後這裡會自動顯示，並跟著期間與平台篩選。</div></section>`;
   }
   const list = DATA.posts.filter(x => inRange(x.date, ctx.cur) && (state.platform === 'all' || x.platform === state.platform));
   if (!list.length) return `<section class="posts-section">${head}<div class="empty">本期間沒有貼文資料</div></section>`;
   const sorted = [...list].sort(POST_SORTS.find(s => s.id === state.postSort).fn).slice(0, 10);
   const rows = sorted.map((x, i) => `<tr>
     <td>${i + 1}</td>
-    <td>${x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${x.title || '(無標題)'}</a>` : (x.title || '(無標題)')}</td>
+    <td><div class="post-cell">${Thumb(x)}${x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${x.title || '(無標題)'}</a>` : `<span>${x.title || '(無標題)'}</span>`}</div></td>
     <td><span class="tag ${x.platform}">${x.platform.toUpperCase()}</span></td>
     <td>${dayKey(x.date)}</td>
     <td class="num" title="${fmtFull(x.reach)}">${fmtNum(x.reach)}</td>
