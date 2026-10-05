@@ -362,7 +362,7 @@ const state = {
   period: 'last_3m', gran: 'month', platform: 'all',
   customFrom: null, customTo: null,
   trendMetric: { fb: 'fb_reach', ig: 'ig_reach' },
-  postSort: 'er',
+  postSort: 'reach',
 };
 const DATA = { monthly: [], daily: [], posts: [], hasPosts: false };
 let charts = {};
@@ -747,11 +747,11 @@ function YearSummary(p, metrics) {
 
 // ---------- 元件：TopPostsTable ----------
 const POST_SORTS = [
-  { id: 'er', label: '互動率最高', fn: (a, b) => (b.er ?? -1) - (a.er ?? -1) },
   { id: 'reach', label: '觸及最高', fn: (a, b) => (b.reach ?? -1) - (a.reach ?? -1) },
   { id: 'comments', label: '留言最多', fn: (a, b) => (b.comments ?? -1) - (a.comments ?? -1) },
   { id: 'shares', label: '分享最多', fn: (a, b) => (b.shares ?? -1) - (a.shares ?? -1) },
-  { id: 'worst', label: '最差表現', fn: (a, b) => (a.er ?? Infinity) - (b.er ?? Infinity) },
+  { id: 'er', label: '互動率最高', fn: (a, b) => (b.er ?? -1) - (a.er ?? -1) },
+  { id: 'worst', label: '表現最差', fn: (a, b) => (a.er ?? Infinity) - (b.er ?? Infinity) },
 ];
 // 貼文縮圖：Meta 的圖片網址會過期，載入失敗就顯示平台色塊
 function Thumb(x) {
