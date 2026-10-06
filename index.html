@@ -1,1487 +1,830 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<!-- 不讓搜尋引擎收錄這個頁面 -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>資策會社群數據 Dashboard</title>
+<title>資策會媒體監測儀表板</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-
   :root {
-    --bg: #f5f7fa;
-    --surface: #ffffff;
-    --surface2: #f0f3f7;
-    --border: #dfe4ea;
-    --text: #1f2328;
-    --text-muted: #656d76;
-    --blue: #0969da;
-    --blue-dim: #1f4b8e;
-    --teal: #1a7f37;
-    --purple: #a371f7;
-    --orange: #cf222e;
-    --yellow: #9a6700;
+    --black: #0e0e0e;
+    --black-2: #1b1b1b;
+    --ink: #141414;
+    --paper: #f4f4f2;
+    --track: #ebebeb;
+    --muted: #6b6b6b;
+    --line: #e2e2e2;
+    --accent: #f04e23;
+    --lv-superhigh: #f04e23;
+    --lv-high: #141414;
+    --lv-medium: #8a8a8a;
+    --up: #141414;
+    --down: #f04e23;
     --fb: #1877f2;
     --ig: #e1306c;
-    --threads: #000000;
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --th: #000000;
+    --yt: #ff0000;
   }
-  *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--text); font-family: var(--body-font); }
-
-
-  header {
-    position: sticky; top: env(safe-area-inset-top, 0px);
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 56px; z-index: 100;
-  }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-mark {
-    width: 28px; height: 28px; background: var(--blue);
-    border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 13px; color: white; letter-spacing: -0.5px;
-  }
-  .logo-text { font-weight: 600; font-size: 15px; color: var(--text); }
-  .logo-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-
-  .view-toggle {
-    display: flex; gap: 2px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 8px; padding: 3px;
-  }
-  .view-btn {
-    padding: 5px 14px; border: none; border-radius: 5px;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    background: transparent; color: var(--text-muted);
-    transition: all 0.15s;
-  }
-  .view-btn.active { background: var(--surface); color: var(--text); }
-
-  main { max-width: 1280px; margin: 0 auto; padding: 24px; }
-
-  .last-updated { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; font-family: var(--num-font); }
-
-  /* Platform tabs */
-  .platform-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-  .platform-tab {
-    padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
-    cursor: pointer; border: 1px solid var(--border); background: var(--surface);
-    color: var(--text-muted); transition: all 0.15s;
-  }
-  .platform-tab.active-fb { background: rgba(24,119,242,0.15); border-color: var(--fb); color: var(--fb); }
-  .platform-tab.active-ig { background: rgba(225,48,108,0.15); border-color: var(--ig); color: var(--ig); }
-  .platform-tab.active-all { background: rgba(56,139,253,0.15); border-color: var(--blue); color: var(--blue); }
-
-  /* KPI Cards */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .kpi-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 18px;
-  }
-  .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.3px; }
-  .kpi-value { font-size: 26px; font-weight: 700; font-family: var(--num-font); line-height: 1; }
-  .kpi-value.fb { color: var(--fb); }
-  .kpi-value.ig { color: var(--ig); }
-  .kpi-change { font-size: 11px; margin-top: 5px; color: var(--text-muted); }
-  .kpi-change.up { color: var(--teal); }
-  .kpi-change.down { color: var(--orange); }
-
-  /* Charts */
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .chart-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 20px;
-  }
-  .chart-card.full { grid-column: 1 / -1; }
-  .chart-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .chart-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
-  .chart-wrap { position: relative; height: 220px; }
-  .chart-wrap.tall { height: 280px; }
-
-  /* Loading */
-  .loading {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 300px; flex-direction: column; gap: 12px;
-  }
-  .spinner {
-    width: 32px; height: 32px; border: 3px solid var(--border);
-    border-top-color: var(--blue); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-muted); }
-
-  .error-msg {
-    background: rgba(247,129,102,0.1); border: 1px solid var(--orange);
-    border-radius: 8px; padding: 16px; margin: 24px 0;
-    font-size: 13px; color: var(--orange);
-  }
-
-  /* Empty state */
-  .empty { text-align: center; padding: 48px; color: var(--text-muted); font-size: 14px; }
-
-  @media (max-width: 768px) {
-    .charts-grid { grid-template-columns: 1fr; }
-    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    main { padding: 16px; }
-  }
-  .platform-section { margin-bottom: 40px; }
-  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; padding-left: 10px; border-left: 4px solid var(--border); }
-  .block-label { font-size: 12px; color: var(--text-muted); margin: 4px 0 8px; }
-  .kpi-card.year { background: var(--surface2); }
-  .section-title.fb { border-color: var(--fb); color: var(--fb); }
-  .section-title.ig { border-color: var(--ig); color: var(--ig); }
-
-  /* ===== P0 新增樣式 ===== */
-  .kpi-card, .chart-card, .filter-bar, .table-wrap { box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
-  .error-msg { background: rgba(207,34,46,0.06); }
-  .header-right { font-size: 12px; color: var(--text-muted); font-family: var(--num-font); text-align: right; }
-
-  .filter-bar {
-    display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 18px; margin-bottom: 12px;
-  }
-  .filter-group { display: flex; flex-direction: column; gap: 6px; }
-  .filter-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.3px; }
-  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    padding: 5px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--border); background: var(--surface2); color: var(--text-muted);
-    transition: all 0.15s; font-family: inherit;
-  }
-  .chip:hover:not(:disabled) { color: var(--text); }
-  .chip.active { background: rgba(56,139,253,0.15); border-color: var(--blue); color: var(--blue); }
-  .chip:disabled { opacity: 0.35; cursor: not-allowed; }
-  .platform-tabs { margin-bottom: 0; }
-  select.month-select {
-    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit;
-  }
-  .custom-range { display: none; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
-  .custom-range.show { display: flex; }
-
-  .period-caption { font-size: 12px; color: var(--text-muted); margin: 0 0 24px 2px; }
-  .period-caption b { color: var(--text); font-weight: 600; }
-
-  /* KPI 卡 */
-  .kpi-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
-  .kpi-card { display: flex; flex-direction: column; min-height: 132px; }
-  .kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; }
-  .kpi-label { margin-bottom: 0; font-size: 12px; }
-  .kpi-value { font-size: 24px; cursor: default; }
-  .kpi-change { margin-top: 8px; font-size: 12px; font-weight: 500; }
-  .kpi-change .abs { color: var(--text-muted); font-weight: 400; margin-left: 4px; }
-  .kpi-change.flat { color: var(--text-muted); }
-  .spark-wrap { height: 32px; margin-top: auto; padding-top: 8px; }
-
-  .info {
-    position: relative; display: inline-flex; align-items: center; justify-content: center;
-    width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border);
-    font-size: 10px; color: var(--text-muted); cursor: help; flex-shrink: 0;
-  }
-  .info:hover::after, .info:focus::after {
-    content: attr(data-tip); position: absolute; right: 0; top: 22px; z-index: 50;
-    width: 220px; padding: 8px 10px; border-radius: 6px; font-size: 11px; line-height: 1.5;
-    background: #1f2328; border: 1px solid #1f2328; color: #ffffff; white-space: normal;
-  }
-
-  /* 趨勢圖 */
-  .trend-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-  .trend-head .chart-sub { margin-bottom: 0; }
-
-  /* 尚缺資料提示 */
-  .todo-note {
-    font-size: 11px; color: var(--text-muted); border: 1px dashed var(--border);
-    border-radius: 8px; padding: 10px 12px; margin-top: 4px; line-height: 1.6;
-  }
-  .todo-note b { color: var(--yellow); font-weight: 600; }
-
-  /* Top Posts */
-  .posts-section { margin-bottom: 40px; }
-  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
-  table.posts { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 720px; }
-  table.posts th, table.posts td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-  table.posts th { font-size: 11px; color: var(--text-muted); font-weight: 500; background: var(--surface2); }
-  table.posts td.num, table.posts th.num { text-align: right; font-family: var(--num-font); }
-  table.posts tr:last-child td { border-bottom: none; }
-  table.posts a { color: var(--blue); text-decoration: none; }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-  .tag.fb { background: rgba(24,119,242,0.15); color: var(--fb); }
-  .tag.ig { background: rgba(225,48,108,0.15); color: var(--ig); }
-  .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .section-head .section-title { margin-bottom: 0; }
-  .section-title.all { border-color: var(--blue); color: var(--text); }
-  .post-cell { display: flex; align-items: center; gap: 12px; }
-  .post-cell a, .post-cell span { line-height: 1.5; }
-  .thumb { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; flex-shrink: 0; display: block; border: 1px solid var(--border); background: var(--surface2); }
-  .thumb.ph { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-  .thumb.ph.fb { color: var(--fb); background: rgba(24,119,242,0.08); }
-  .thumb.ph.ig { color: var(--ig); background: rgba(225,48,108,0.08); }
-
-  details.year-block { margin-top: 16px; }
-  details.year-block summary { font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 10px; }
-
-  @media (max-width: 768px) {
-    .filter-bar { gap: 12px; }
-    header { padding: 0 16px; }
-    .header-right { display: none; }
-  }
-
-
-  /* ===== 視覺更新：字級放大、風格活潑 ===== */
-  :root {
-    --body-font: 'Noto Sans TC', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    --num-font: 'Outfit', 'Noto Sans TC', -apple-system, sans-serif;
-    --bg: #eef3fb;
-    --text: #1b2433;
-    --text-muted: #5b6577;
-    --border: #dbe3ef;
-    --ig-grad: linear-gradient(120deg, #7b3fe4 0%, #e1306c 55%, #ff9a3c 100%);
-    --fb-grad: linear-gradient(120deg, #0b5ed7 0%, #1877f2 55%, #4aa8ff 100%);
-  }
-  html { font-size: 16px; }
-  body { line-height: 1.6; -webkit-font-smoothing: antialiased;
-    background: radial-gradient(1200px 500px at 85% -10%, rgba(225,48,108,0.08), transparent 60%),
-                radial-gradient(1000px 500px at -10% 0%, rgba(24,119,242,0.10), transparent 60%), var(--bg); }
-
-  header { height: 72px; padding: 0 32px; background: rgba(255,255,255,0.85); }
-  .logo-mark { width: 40px; height: 40px; border-radius: 12px; font-size: 15px; font-family: var(--num-font); font-weight: 800;
-    background: conic-gradient(from 200deg, #1877f2, #7b3fe4, #e1306c, #ff9a3c, #1877f2); }
-  .logo-text { font-size: 19px; font-weight: 900; letter-spacing: 0.5px; }
-  .logo-sub { font-size: 14px; }
-  .header-right { font-size: 14px; font-family: var(--body-font); }
-
-  main { max-width: 1320px; padding: 32px; }
-
-  .filter-bar { padding: 20px 24px; border-radius: 18px; gap: 20px 32px; }
-  .filter-label { font-size: 14px; font-weight: 700; color: var(--text); }
-  .chip { font-size: 15px; padding: 7px 16px; border-radius: 999px; }
-  .chip.active { background: #1b2433; border-color: #1b2433; color: #fff; }
-  .platform-tab { font-size: 15px; padding: 8px 20px; border-radius: 999px; font-weight: 700; }
-  .platform-tab.active-all { background: #1b2433; border-color: #1b2433; color: #fff; }
-  .platform-tab.active-fb { background: var(--fb-grad); border-color: transparent; color: #fff; }
-  .platform-tab.active-ig { background: var(--ig-grad); border-color: transparent; color: #fff; }
-  .view-toggle { border-radius: 999px; padding: 4px; }
-  .view-toggle .chip { border: none; background: transparent; padding: 6px 18px; }
-  .view-toggle .chip.active { background: #1b2433; color: #fff; }
-  select.month-select { font-size: 15px; padding: 6px 10px; border-radius: 10px; }
-  .custom-range { font-size: 15px; margin-top: 4px; }
-  .period-caption { font-size: 15px; margin: 4px 0 32px 4px; }
-
-  /* 平台大標：這頁唯一的大膽元素 */
-  .platform-section { margin-bottom: 56px; }
-  .section-title { display: inline-flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 900;
-    padding: 10px 26px; border: none; border-radius: 999px; color: #fff; margin-bottom: 20px; letter-spacing: 0.5px; }
-  .section-title.fb { background: var(--fb-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(24,119,242,0.55); }
-  .section-title.ig { background: var(--ig-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(225,48,108,0.55); }
-  .section-title.all { background: #1b2433; color: #fff; }
-
-  /* KPI */
-  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .kpi-card, .chart-card { min-width: 0; }
-  .platform-tab { white-space: nowrap; }
-  .kpi-card { border-radius: 18px; padding: 20px 22px; min-height: 168px; border: 1px solid var(--border); }
-  .kpi-label { font-size: 16px; font-weight: 700; color: var(--text); }
-  .kpi-value { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
-  .kpi-change { font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
-  .kpi-change .abs { font-size: 14px; margin-left: 0; }
-  .delta { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 700; font-family: var(--num-font); }
-  .delta.up { background: rgba(26,127,55,0.12); color: #1a7f37; }
-  .delta.down { background: rgba(207,34,46,0.10); color: #cf222e; }
-  .delta.flat { background: var(--surface2); color: var(--text-muted); }
-  .spark-wrap { height: 40px; }
-  .info { width: 20px; height: 20px; font-size: 12px; font-weight: 700; }
-  .info:hover::after, .info:focus::after { font-size: 14px; width: 260px; padding: 10px 12px; border-radius: 10px; }
-
-  /* 年度 */
-  details.year-block summary { font-size: 16px; font-weight: 700; color: var(--text); }
-  .kpi-card.year { min-height: auto; background: rgba(255,255,255,0.6); border-style: dashed; }
-  .kpi-card.year .kpi-value { font-size: 30px; }
-
-  /* 圖表 */
-  .chart-card { border-radius: 18px; padding: 24px 26px; }
-  .chart-title { font-size: 19px; font-weight: 900; }
-  .chart-sub { font-size: 14px; }
-  .chart-wrap.tall { height: 340px; }
-  .trend-head .chip { font-size: 14px; }
-
-  .todo-note { font-size: 14px; border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,0.6); }
-
-  /* Top Posts */
-  .section-head { margin-bottom: 20px; }
-  .table-wrap { border-radius: 18px; }
-  table.posts { font-size: 16px; }
-  table.posts th { font-size: 14px; font-weight: 700; padding: 14px 18px; white-space: nowrap; }
-  table.posts td:nth-child(3), table.posts td:nth-child(4) { white-space: nowrap; }
-  table.posts td { padding: 14px 18px; }
-  table.posts td:first-child { font-family: var(--num-font); font-weight: 800; font-size: 20px; color: var(--text-muted); width: 56px; }
-  table.posts tr:nth-child(1) td:first-child { color: #e3a008; }
-  table.posts tr:nth-child(2) td:first-child { color: #8a97a8; }
-  table.posts tr:nth-child(3) td:first-child { color: #c2703d; }
-  table.posts tbody tr:hover { background: #f6f9ff; }
-  table.posts a { font-weight: 500; }
-  .thumb { width: 76px; height: 76px; border-radius: 14px; }
-  .thumb.ph { font-size: 14px; }
-  .tag { font-size: 13px; padding: 3px 12px; }
-  .tag.fb { background: var(--fb-grad); color: #fff; }
-  .tag.ig { background: var(--ig-grad); color: #fff; }
-
-  .empty { font-size: 16px; }
-  .error-msg { font-size: 15px; border-radius: 14px; }
-  .loading-text { font-size: 15px; }
-
-  @media (max-width: 768px) {
-    html { font-size: 15px; }
-    header { padding: 0 16px; }
-    main { padding: 18px; }
-    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .kpi-value { font-size: 28px; }
-    .section-title { font-size: 20px; }
-  }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-  /* ===== 手機版 ===== */
-  @media (max-width: 640px) {
-    html { font-size: 15px; }
-    header { height: 60px; padding: 0 16px; }
-    .logo-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 13px; }
-    .logo-text { font-size: 17px; }
-    .logo-sub { font-size: 12px; }
-    main { padding: 14px 14px 40px; }
-
-    /* 篩選列：每組一行，左右滑動 */
-    .filter-bar { padding: 14px 0 14px 14px; gap: 14px; border-radius: 16px; flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
-    .filter-group { min-width: 0; }
-    .filter-group .chip-row, .platform-tabs, .view-toggle {
-      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-right: 14px;
-    }
-    .filter-group .chip-row::-webkit-scrollbar, .platform-tabs::-webkit-scrollbar { display: none; }
-    .view-toggle { align-self: flex-start; padding-right: 4px; }
-    .chip { font-size: 14px; padding: 7px 14px; white-space: nowrap; flex-shrink: 0; }
-    .platform-tab { font-size: 14px; padding: 7px 16px; flex-shrink: 0; }
-    .custom-range { padding-right: 14px; }
-    .chip[data-period]:disabled { display: none; }
-    .period-caption { font-size: 13px; margin: 2px 2px 22px; }
-
-    /* 平台標題 */
-    .platform-section { margin-bottom: 40px; }
-    .section-title { font-size: 19px; padding: 8px 20px; margin-bottom: 14px; }
-
-    /* KPI：兩欄 */
-    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
-    .kpi-card { padding: 14px; min-height: 0; border-radius: 14px; }
-    .kpi-label { font-size: 14px; }
-    .kpi-value { font-size: 26px; }
-    .kpi-change { font-size: 12px; gap: 4px; margin-top: 8px; }
-    .kpi-change .abs { font-size: 12px; }
-    .delta { padding: 1px 8px; }
-    .spark-wrap { height: 30px; padding-top: 6px; }
-    .kpi-card.year .kpi-value { font-size: 22px; }
-
-    /* 指標說明：點 i 後從畫面底部浮出 */
-    .info { width: 22px; height: 22px; }
-    .info:hover::after, .info:focus::after {
-      position: fixed; left: 14px; right: 14px; bottom: 16px; top: auto; width: auto;
-      font-size: 14px; padding: 14px 16px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    /* 趨勢圖 */
-    .chart-card { padding: 16px 14px; border-radius: 14px; }
-    .chart-title { font-size: 17px; }
-    .chart-sub { font-size: 12px; }
-    .trend-head { flex-direction: column; flex-wrap: nowrap; gap: 10px; margin-bottom: 8px; }
-    .trend-head > div { min-width: 0; }
-    .trend-head .chip-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -14px; padding-right: 14px; }
-    .trend-head .chip-row::-webkit-scrollbar { display: none; }
-    .trend-head .chip { font-size: 13px; padding: 6px 12px; }
-    .chart-wrap.tall { height: 240px; }
-
-    details.year-block summary { font-size: 14px; }
-    .todo-note { font-size: 13px; padding: 12px 14px; }
-
-    /* Top Posts：表格改成卡片 */
-    .section-head { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; }
-    .section-head .chip-row { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
-    .section-head .chip-row::-webkit-scrollbar { display: none; }
-    .table-wrap { background: transparent; border: none; box-shadow: none; overflow: visible; }
-    table.posts { min-width: 0; font-size: 15px; }
-    table.posts thead { display: none; }
-    table.posts, table.posts tbody { display: block; }
-    table.posts tr {
-      display: grid; grid-template-columns: auto auto 1fr; grid-template-areas:
-        "post post post" "rank plat date" "s1 s2 s3";
-      gap: 10px 10px; align-items: center;
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 14px; margin-bottom: 12px;
-    }
-    table.posts tbody tr:hover { background: var(--surface); }
-    table.posts td { padding: 0; border: none; }
-    table.posts td.post { grid-area: post; }
-    table.posts td.rank { grid-area: rank; width: auto; font-size: 15px; }
-    table.posts td.rank::before { content: '第 '; font-weight: 500; }
-    table.posts td.rank::after { content: ' 名'; font-weight: 500; }
-    table.posts td.plat { grid-area: plat; }
-    table.posts td.date { grid-area: date; color: var(--text-muted); font-size: 13px; text-align: right; }
-    table.posts td.num { text-align: left; background: var(--surface2); border-radius: 10px; padding: 8px 10px; font-size: 17px; font-weight: 700; }
-    table.posts td.num::before { content: attr(data-label); display: block; font-family: var(--body-font); font-size: 12px; font-weight: 500; color: var(--text-muted); }
-    table.posts td.num:nth-child(5) { grid-area: s1; }
-    table.posts td.num:nth-child(6) { grid-area: s2; }
-    table.posts td.num:nth-child(7) { grid-area: s3; }
-    table.posts tr { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas:
-        "post post post" "rank plat date" "s1 s2 s3"; }
-    .post-cell { gap: 12px; align-items: flex-start; }
-    .post-cell a, .post-cell span { font-size: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .thumb { width: 72px; height: 72px; }
-  }
-
-  /* ===== YouTube ===== */
-  :root { --yt: #e60023; --yt-grad: linear-gradient(120deg, #b3001b 0%, #e60023 55%, #ff5a5f 100%); }
-  .kpi-value.yt { color: var(--yt); }
-  .section-title.yt { background: var(--yt-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(230,0,35,0.5); }
-  .platform-tab.active-yt { background: var(--yt-grad); border-color: transparent; color: #fff; }
-  .video-block { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 24px 26px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
-  .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-  .video-card { display: block; text-decoration: none; color: var(--text); border-radius: 14px; overflow: hidden; background: var(--surface2); border: 1px solid var(--border); }
-  .video-card:hover .video-title { color: var(--yt); }
-  .video-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #ddd; }
-  .video-meta { padding: 10px 12px 12px; }
-  .video-title { font-size: 15px; font-weight: 700; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .video-date { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: var(--num-font); }
-  @media (max-width: 640px) {
-    .video-block { padding: 16px 14px; border-radius: 14px; }
-    .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .video-title { font-size: 13px; }
-    .video-date { font-size: 12px; }
-  }
-
-  /* ===== 黑白灰漸層主題（平台色只用在重點） ===== */
-  :root {
-    --bg: #f2f2f3;
-    --surface: #ffffff;
-    --surface2: #f0f0f2;
-    --border: #e2e2e6;
-    --text: #121214;
-    --text-muted: #62626b;
-    --mono-grad: linear-gradient(135deg, #0c0c0e 0%, #2a2a2f 55%, #4a4a52 100%);
-    --card-grad: linear-gradient(160deg, #ffffff 0%, #fafafb 55%, #f1f1f3 100%);
-    --soft-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 10px 28px -14px rgba(0,0,0,0.18);
-  }
-  html { background: #e6e6e9; }
+  * { box-sizing: border-box; }
+  html { font-size: 18px; }
   body {
-    min-height: 100vh; color: var(--text);
-    background:
-      radial-gradient(900px 420px at 100% 0%, rgba(0,0,0,0.06), transparent 65%),
-      radial-gradient(900px 500px at 0% 600px, rgba(255,255,255,0.9), transparent 70%),
-      linear-gradient(180deg, #fbfbfc 0%, #ededef 40%, #e6e6e9 100%);
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.6;
+  }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- 頁首 ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.9rem clamp(1rem, 4vw, 2.5rem);
+    background: var(--black); color: #fff;
+  }
+  .topbar h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+  .topbar .meta { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; color: #b5b5b5; }
+  .topbar button {
+    font: inherit; font-size: 0.85rem; color: #fff; background: transparent;
+    border: 1px solid #555; border-radius: 6px; padding: 0.3rem 0.8rem; cursor: pointer; white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .topbar #updated { display: none; }
+    .spark { width: 110px; }
+  }
+  .topbar button:hover { background: var(--black-2); }
+
+  /* ---------- 敏感新聞快報 ---------- */
+  .alert-band {
+    background: var(--black-2); color: #fff;
+    padding: 1.1rem clamp(1rem, 4vw, 2.5rem) 1.2rem;
+    border-bottom: 6px solid var(--accent);
+  }
+  .alert-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+  .alert-count { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; line-height: 1.1; }
+  .alert-count.calm { color: #e6e6e6; }
+  .alert-sub { font-size: 1rem; color: #b5b5b5; }
+  .alert-levels { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .alert-head:empty, .alert-levels:empty { display: none; }
+  .ticker-empty { margin: 0; padding: 0.85rem 1rem; color: #b5b5b5; font-size: 1rem; }
+  .lv-chip {
+    font-size: 0.85rem; font-weight: 700; padding: 0.15rem 0.7rem; border-radius: 999px;
+    background: rgba(255,255,255,0.1); color: #fff;
+  }
+  .lv-chip b { font-size: 1rem; margin-left: 0.3rem; }
+
+  .ticker {
+    margin-top: 0.8rem; overflow: hidden; position: relative;
+    background: rgba(255,255,255,0.06); border-radius: 8px;
+    mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  }
+  .ticker-track { display: inline-flex; gap: 2.5rem; padding: 0.85rem 0; white-space: nowrap; animation: scroll var(--dur, 60s) linear infinite; }
+  .ticker:hover .ticker-track, .ticker:focus-within .ticker-track { animation-play-state: paused; }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .tick-item { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; font-size: 1.05rem; }
+  .tick-item:hover .tick-title { text-decoration: underline; }
+  .tick-lv { font-size: 0.8rem; font-weight: 700; padding: 0.1rem 0.55rem; border-radius: 4px; color: #fff; }
+  .tick-date { font-size: 0.85rem; color: #9a9a9a; }
+  .lv-superHigh { background: var(--lv-superhigh); }
+  .lv-high { background: var(--lv-high); box-shadow: inset 0 0 0 1px #fff; }
+  .lv-medium { background: var(--lv-medium); }
+  .lv-chip.chip-superHigh { background: var(--accent); }
+
+  .alert-list { list-style: none; margin: 1rem 0 0; padding: 0; display: none; }
+  .alert-list li { padding: 0.5rem 0; border-top: 1px solid rgba(255,255,255,0.15); }
+  .alert-list a { text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker { display: none; }
+    .alert-list { display: block; }
   }
 
-  /* 頂部：深色漸層橫條 */
-  header {
-    background: linear-gradient(100deg, #0b0b0d 0%, #1f1f23 50%, #34343a 100%);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: none;
+  /* ---------- 版面 ---------- */
+  main { padding: 1.8rem clamp(1rem, 4vw, 2.5rem) 3rem; max-width: 1280px; margin: 0 auto; }
+  .row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.8rem; }
+  .row > section, .report-grid > div { min-width: 0; }
+  @media (max-width: 900px) { .row { grid-template-columns: minmax(0, 1fr); } }
+  section h2 {
+    font-size: 1.3rem; font-weight: 900; margin: 0 0 0.8rem; color: var(--ink);
   }
-  .logo-text { color: #ffffff; }
-  .logo-sub { color: rgba(255,255,255,0.6); }
-  .header-right { color: rgba(255,255,255,0.65); }
-  .logo-mark { box-shadow: 0 0 0 2px rgba(255,255,255,0.12); }
+  .section-head h2 { margin: 0; }
+  .section-note { font-size: 0.85rem; color: var(--muted); margin: 0 0 1rem; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 1.3rem 1.4rem; }
+  .state { color: var(--muted); font-size: 0.95rem; padding: 1rem 0; }
+  .state.error { color: var(--lv-superhigh); }
 
-  /* 卡片：白到淺灰漸層 + 柔和陰影 */
-  .filter-bar, .kpi-card, .chart-card, .video-block, .table-wrap {
-    background: var(--card-grad);
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: var(--soft-shadow);
+  /* ---------- 新聞熱度 ---------- */
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
+  .period-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+  .period-btn { font: inherit; font-size: 0.85rem; padding: 0.25rem 0.8rem; border: none; background: transparent; color: var(--muted); cursor: pointer; }
+  .period-btn[aria-pressed="true"] { background: var(--ink); color: #fff; font-weight: 700; }
+  .heat-list { list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+  .heat-item {
+    display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: 0.2rem 0.9rem; align-items: start;
+    padding: 0.9rem 0; border-top: 1px solid var(--line);
   }
-  .kpi-card.year { background: linear-gradient(160deg, rgba(255,255,255,0.75), rgba(240,240,242,0.75)); border: 1px dashed #cfcfd5; box-shadow: none; }
-  .todo-note { background: linear-gradient(160deg, rgba(255,255,255,0.7), rgba(236,236,239,0.7)); border-color: #cfcfd5; }
-  .todo-note b { color: #3a3a40; }
+  .heat-item:first-child { border-top: none; padding-top: 0.2rem; }
+  .heat-rank { font-size: 1.6rem; font-weight: 900; color: var(--muted); line-height: 1.2; text-align: center; }
+  .heat-item:nth-child(-n+3) .heat-rank { color: var(--accent); }
+  .heat-title { font-size: 1.05rem; font-weight: 700; text-decoration: none; line-height: 1.45; }
+  .heat-title:hover { text-decoration: underline; }
+  .heat-media { grid-column: 2; font-size: 0.85rem; color: var(--muted); }
+  .heat-count { text-align: right; white-space: nowrap; }
+  .heat-count b { display: block; font-size: 1.5rem; font-weight: 900; line-height: 1.1; color: var(--ink); }
+  .heat-count span { font-size: 0.8rem; color: var(--muted); }
 
-  /* 選中狀態：黑色漸層 */
-  .chip { background: linear-gradient(180deg, #ffffff, #f0f0f2); border-color: #dcdce1; color: #4a4a52; }
-  .chip:hover:not(:disabled) { color: #121214; border-color: #b9b9c0; }
-  .chip.active, .platform-tab.active-all, .view-toggle .chip.active {
-    background: var(--mono-grad); border-color: transparent; color: #fff;
-    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.45);
+  /* ---------- 社群月度 ---------- */
+  .social-grid { display: grid; gap: 1rem; }
+  /* 平台卡片：底色用各平台代表色，文字一律白色 */
+  .platform { border-radius: 12px; padding: 1.1rem 1.3rem 1.2rem; color: #fff; }
+  .platform.fb { background: var(--fb); }
+  .platform.ig { background: linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 78%, #515bd4 100%); }
+  .platform.th { background: var(--th); }
+  .platform.yt { background: #e60000; }
+  .platform h3 { margin: 0 0 0.4rem; font-size: 1.05rem; color: #fff; }
+  .platform .big-label, .platform .metrics, .platform .state { color: rgba(255,255,255,0.85); }
+  .platform .metric b { color: #fff; }
+  .platform .chg, .platform .chg.up, .platform .chg.down { color: #fff; }
+  .platform-main { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.5rem 1rem; }
+  .social-grid > * { min-width: 0; }
+  .big-num { font-size: 2.2rem; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .big-label { font-size: 0.9rem; color: var(--muted); }
+  .spark { width: 150px; height: 46px; flex-shrink: 0; }
+  .metrics { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin-top: 0.7rem; font-size: 0.9rem; }
+  .metric b { font-variant-numeric: tabular-nums; }
+  .chg { font-size: 0.8rem; font-weight: 700; margin-left: 0.25rem; white-space: nowrap; }
+  .chg.up { color: var(--up); }
+  .chg.down { color: var(--down); }
+
+  /* ---------- YouTube ---------- */
+  .videos { margin-top: 2.2rem; }
+  .channel-link { font-size: 0.9rem; font-weight: 700; color: var(--accent); }
+  .video-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4rem; }
+  @media (max-width: 900px) { .video-grid { grid-template-columns: minmax(0, 1fr); } }
+  .video-card { display: block; text-decoration: none; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .video-card:hover { border-color: var(--accent); }
+  .video-card:hover .video-title { text-decoration: underline; }
+  .thumb { position: relative; aspect-ratio: 16 / 9; background: var(--black-2); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .play {
+    position: absolute; right: 0.7rem; bottom: 0.7rem; width: 2.6rem; height: 2.6rem; border-radius: 50%;
+    background: var(--accent); display: grid; place-items: center;
   }
-  .platform-tab { background: linear-gradient(180deg, #ffffff, #f0f0f2); border-color: #dcdce1; color: #4a4a52; }
-  .view-toggle { background: #e9e9ec; border-color: #dcdce1; }
-  select.month-select { background: #fff; border-color: #dcdce1; }
-
-  /* 標題 */
-  .section-title.all { background: var(--mono-grad); box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5); }
-  .chart-title, .kpi-label { color: #121214; }
-  details.year-block summary { color: #2a2a2f; }
-
-  /* 表格 */
-  table.posts th { background: linear-gradient(180deg, #f6f6f7, #ececef); color: #4a4a52; }
-  table.posts tbody tr:hover { background: #f6f6f8; }
-  table.posts a { color: #121214; }
-  table.posts a:hover { text-decoration: underline; }
-  table.posts tr:nth-child(1) td:first-child { color: #c9a227; }
-  table.posts tr:nth-child(2) td:first-child { color: #9a9aa3; }
-  table.posts tr:nth-child(3) td:first-child { color: #b2734a; }
-  .video-card { background: #fff; }
-  .info { background: #fff; border-color: #cfcfd5; color: #4a4a52; }
-
-  @media (max-width: 640px) {
-    table.posts tr { background: var(--card-grad); box-shadow: var(--soft-shadow); border-color: rgba(0,0,0,0.06); }
-    table.posts td.num { background: linear-gradient(180deg, #f6f6f7, #ececef); }
+  .play::after { content: ""; border-left: 0.75rem solid #fff; border-top: 0.45rem solid transparent; border-bottom: 0.45rem solid transparent; margin-left: 0.2rem; }
+  .video-body { padding: 0.8rem 1rem 1rem; }
+  .video-title {
+    font-size: 1rem; font-weight: 700; line-height: 1.5; margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
+  .video-date { font-size: 0.85rem; color: var(--muted); margin-top: 0.3rem; }
 
-  .tag.yt { background: var(--yt-grad); color: #fff; }
-  .thumb.ph.yt { color: var(--yt); background: rgba(230,0,35,0.08); }
-  .thumb.yt-thumb { width: 112px; height: 63px; }
-  @media (max-width: 640px) { .thumb.yt-thumb { width: 104px; height: 58px; } }
+  /* ---------- 新聞露出月報 ---------- */
+  .report { margin-top: 2.2rem; }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 1.8rem; }
+  @media (max-width: 1000px) { .report-grid { grid-template-columns: minmax(0, 1fr); } }
+  .report-total { font-size: 3rem; font-weight: 900; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .report-total small { font-size: 1rem; font-weight: 500; color: var(--muted); margin-left: 0.3rem; }
+  .senti-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin: 1rem 0 0.6rem; background: var(--line); }
+  .senti-bar span { display: block; height: 100%; }
+  .senti-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-size: 0.9rem; }
+  .dot { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; margin-right: 0.35rem; vertical-align: middle; }
+  .sub-h { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin: 0 0 0.6rem; }
+  .media-list { list-style: none; margin: 0; padding: 0; font-size: 0.95rem; }
+  .media-list li { display: flex; justify-content: space-between; padding: 0.35rem 0; border-top: 1px dashed var(--line); }
+  .media-list li:first-child { border-top: none; }
+  .dept-row { display: grid; grid-template-columns: 6.5rem 1fr 2.6rem; gap: 0.6rem; align-items: center; font-size: 0.9rem; margin-bottom: 0.45rem; }
+  .dept-bar { height: 12px; border-radius: 6px; background: var(--track); overflow: hidden; }
+  .dept-bar span { display: block; height: 100%; }
+  .dept-row b { text-align: right; font-variant-numeric: tabular-nums; }
+  .month-h { margin-top: 1.4rem; }
+  .month-bars { display: flex; align-items: flex-end; gap: 0.5rem; height: 120px; }
+  .month-bar { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; min-width: 0; }
+  .mb-num { font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .mb-col { flex: 1; width: 100%; max-width: 34px; display: flex; align-items: flex-end; }
+  .mb-col span { display: block; width: 100%; background: var(--ink); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .mb-label { font-size: 0.8rem; color: var(--ink); margin-top: 0.2rem; }
+  .more-link { display: inline-block; margin-top: 1rem; font-size: 0.9rem; font-weight: 700; color: var(--accent); }
 
-  /* ===== Threads ===== */
-  :root { --th: #111113; --th-grad: linear-gradient(120deg, #000000 0%, #2b2b30 60%, #55555d 100%); }
-  .kpi-value.th { color: var(--th); }
-  .section-title.th { background: var(--th-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(0,0,0,0.55); }
-  .platform-tab.active-th { background: var(--th-grad); border-color: transparent; color: #fff; }
-  .tag.th { background: var(--th-grad); color: #fff; }
-  .thumb.ph.th { color: #111113; background: linear-gradient(160deg, #ffffff, #e9e9ec); }
-
-  /* ===== 全部平台總覽（科技感） ===== */
-  .overview { margin-bottom: 48px; }
-  .ov-hero {
-    position: relative; overflow: hidden; border-radius: 24px; padding: 30px 34px 26px; color: #fff;
-    background:
-      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px) 0 0 / 28px 28px,
-      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px) 0 0 / 28px 28px,
-      radial-gradient(600px 260px at 85% -10%, rgba(120,140,255,0.28), transparent 70%),
-      radial-gradient(500px 240px at 0% 110%, rgba(255,80,140,0.20), transparent 70%),
-      linear-gradient(135deg, #07070a 0%, #15151b 55%, #24242c 100%);
-    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
-    margin-bottom: 18px;
-  }
-  .ov-hero-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-  .ov-kicker { font-family: var(--num-font); font-size: 13px; letter-spacing: 2.5px; font-weight: 600; color: #a9b4ff; }
-  .ov-kicker.dim { color: rgba(255,255,255,0.45); }
-  .ov-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 26px; }
-  .ov-label { font-size: 15px; color: rgba(255,255,255,0.65); font-weight: 500; margin-bottom: 4px; }
-  .ov-big {
-    font-family: var(--num-font); font-weight: 800; font-size: 64px; line-height: 1.05; letter-spacing: -1.5px;
-    background: linear-gradient(180deg, #ffffff 0%, #c9cbd6 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
-    text-shadow: 0 0 40px rgba(160,170,255,0.18);
-  }
-  .ov-delta { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 999px; font-family: var(--num-font); font-weight: 700; font-size: 14px; }
-  .ov-delta.up { background: rgba(46,204,113,0.16); color: #4be08a; }
-  .ov-delta.down { background: rgba(255,82,82,0.16); color: #ff7b7b; }
-  .ov-delta.flat, .ov-delta.none { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); font-weight: 500; }
-  .ov-share { margin-bottom: 14px; }
-  .ov-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; gap: 3px; background: rgba(255,255,255,0.06); }
-  .ov-seg { min-width: 4px; }
-  .ov-seg.fb { background: linear-gradient(90deg, #0b5ed7, #4aa8ff); }
-  .ov-seg.ig { background: linear-gradient(90deg, #7b3fe4, #e1306c, #ff9a3c); }
-  .ov-seg.th { background: linear-gradient(90deg, #9a9aa6, #f2f2f5); }
-  .ov-seg.yt { background: linear-gradient(90deg, #b3001b, #ff5a5f); }
-  .ov-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 10px; font-size: 14px; color: rgba(255,255,255,0.75); }
-  .ov-leg { display: inline-flex; align-items: center; gap: 6px; }
-  .ov-leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-  .ov-leg i.fb { background: #1877f2; } .ov-leg i.ig { background: #e1306c; } .ov-leg i.th { background: #e8e8ee; } .ov-leg i.yt { background: #ff3b48; }
-  .ov-leg b { font-family: var(--num-font); color: #fff; margin-left: 2px; }
-  .ov-note { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.6; }
-
-  .ov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-  .ov-card {
-    position: relative; text-align: left; cursor: pointer; font-family: inherit; color: #fff; border: none;
-    border-radius: 20px; padding: 20px 20px 0; overflow: hidden; display: flex; flex-direction: column;
-    background: linear-gradient(160deg, #15151a 0%, #1f1f26 60%, #2a2a33 100%);
-    box-shadow: 0 18px 40px -24px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.07);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-  }
-  .ov-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; }
-  .ov-card.fb::before { background: linear-gradient(90deg, #0b5ed7, #4aa8ff); }
-  .ov-card.ig::before { background: linear-gradient(90deg, #7b3fe4, #e1306c, #ff9a3c); }
-  .ov-card.th::before { background: linear-gradient(90deg, #77777f, #f2f2f5); }
-  .ov-card.yt::before { background: linear-gradient(90deg, #b3001b, #ff5a5f); }
-  .ov-card:hover { transform: translateY(-3px); box-shadow: 0 26px 50px -24px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); }
-  .ov-card:focus-visible { outline: 2px solid #a9b4ff; outline-offset: 3px; }
-  .ov-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .ov-chip { font-size: 14px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
-  .ov-chip.fb { background: var(--fb-grad); } .ov-chip.ig { background: var(--ig-grad); }
-  .ov-chip.th { background: #f2f2f5; color: #111; } .ov-chip.yt { background: var(--yt-grad); }
-  .ov-go { font-size: 13px; color: rgba(255,255,255,0.45); transition: color 0.18s; }
-  .ov-card:hover .ov-go { color: #fff; }
-  .ov-metric { margin-bottom: 12px; }
-  .ov-metric .ov-label { font-size: 14px; }
-  .ov-num { font-family: var(--num-font); font-weight: 800; font-size: 36px; line-height: 1.1; letter-spacing: -0.5px; }
-  .ov-num.small { font-size: 24px; }
-  .ov-metric .ov-delta { font-size: 13px; margin-top: 6px; }
-  .ov-metric.sub { padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
-  .ov-spark { height: 54px; margin: 0 -20px; margin-top: auto; }
-
-  @media (max-width: 640px) {
-    .ov-hero { padding: 22px 18px 18px; border-radius: 18px; }
-    .ov-kicker { font-size: 11px; letter-spacing: 1.5px; }
-    .ov-totals { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
-    .ov-big { font-size: 46px; }
-    .ov-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .ov-card { padding: 14px 14px 0; border-radius: 16px; }
-    .ov-chip { font-size: 12px; padding: 3px 9px; }
-    .ov-go { display: none; }
-    .ov-num { font-size: 26px; }
-    .ov-num.small { font-size: 19px; }
-    .ov-metric .ov-label { font-size: 12px; }
-    .ov-metric .ov-delta { font-size: 11px; padding: 2px 8px; }
-    .ov-spark { height: 40px; margin: 0 -14px; margin-top: auto; }
-  }
+  footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 1rem 2rem; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <div class="logo-mark">III</div>
-    <div>
-      <div class="logo-text">資策會</div>
-      <div class="logo-sub">社群數據 Dashboard</div>
-    </div>
+<header class="topbar">
+  <h1>資策會媒體監測</h1>
+  <div class="meta">
+    <span id="updated">資料載入中</span>
+    <button type="button" id="refresh">重新整理</button>
   </div>
-  <div class="header-right" id="last-updated">讀取中...</div>
 </header>
 
-<main>
-  <div class="filter-bar">
-    <div class="filter-group">
-      <span class="filter-label">日期區間</span>
-      <div class="chip-row">
-        <button class="chip" data-period="last_7d" data-need-daily="1" onclick="setPeriod('last_7d')">近 7 天</button>
-        <button class="chip" data-period="last_30d" data-need-daily="1" onclick="setPeriod('last_30d')">近 30 天</button>
-        <button class="chip" data-period="this_month" onclick="setPeriod('this_month')">本月</button>
-        <button class="chip" data-period="last_month" onclick="setPeriod('last_month')">上月</button>
-        <button class="chip" data-period="last_3m" onclick="setPeriod('last_3m')">近 3 個月</button>
-        <button class="chip" data-period="last_6m" onclick="setPeriod('last_6m')">近 6 個月</button>
-        <button class="chip" data-period="ytd" onclick="setPeriod('ytd')">今年</button>
-        <button class="chip" data-period="custom" onclick="setPeriod('custom')">自訂</button>
-      </div>
-      <div class="custom-range" id="custom-range">
-        <select class="month-select" id="custom-from" onchange="setCustom()"></select>
-        <span>至</span>
-        <select class="month-select" id="custom-to" onchange="setCustom()"></select>
-      </div>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">平台</span>
-      <div class="platform-tabs">
-        <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
-        <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
-        <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
-        <button class="platform-tab" id="tab-th" onclick="setPlatform('th')">Threads</button>
-        <button class="platform-tab" id="tab-yt" onclick="setPlatform('yt')">YouTube</button>
-      </div>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">圖表粒度</span>
-      <div class="view-toggle">
-        <button class="view-btn chip" data-gran="day" onclick="setGran('day')">日</button>
-        <button class="view-btn chip" data-gran="week" onclick="setGran('week')">週</button>
-        <button class="view-btn chip active" data-gran="month" onclick="setGran('month')">月</button>
-      </div>
-    </div>
+<section class="alert-band" aria-label="敏感新聞快報">
+  <div class="alert-head">
+    <div class="alert-levels" id="alert-levels"></div>
   </div>
-  <div class="period-caption" id="period-caption"></div>
+  <div class="ticker" id="ticker"></div>
+  <ul class="alert-list" id="alert-list"></ul>
+</section>
 
-  <div id="app">
-    <div class="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">讀取 Google Sheets 數據...</div>
-    </div>
+<main>
+  <div class="row">
+    <section aria-labelledby="heat-h">
+      <div class="section-head">
+        <h2 id="heat-h">新聞熱度前五名</h2>
+        <div class="period-switch" role="group" aria-label="分析區間">
+          <button type="button" class="period-btn" data-days="7" aria-pressed="true">7 天</button>
+          <button type="button" class="period-btn" data-days="30" aria-pressed="false">30 天</button>
+        </div>
+      </div>
+      <div class="panel" id="heat"><p class="state">載入中</p></div>
+    </section>
+
+    <section aria-labelledby="social-h">
+      <div class="section-head">
+        <h2 id="social-h">社群表現</h2>
+        <div class="period-switch" role="group" aria-label="社群數據區間">
+          <button type="button" class="period-btn social-btn" data-mode="year" aria-pressed="true">年度</button>
+          <button type="button" class="period-btn social-btn" data-mode="month" aria-pressed="false">當月</button>
+        </div>
+      </div>
+      <div id="social"><p class="state">載入中</p></div>
+    </section>
   </div>
+
+  <section class="videos" aria-labelledby="video-h">
+    <div class="section-head">
+      <h2 id="video-h">YouTube 最新影片</h2>
+      <a class="channel-link" href="https://www.youtube.com/@weloveIII0724" target="_blank" rel="noopener">前往頻道</a>
+    </div>
+    <div id="videos"><p class="state">載入中</p></div>
+  </section>
+
+  <section class="report" aria-labelledby="report-h">
+    <h2 id="report-h">年度新聞露出</h2>
+    <div class="panel" id="report"><p class="state">載入中</p></div>
+  </section>
 </main>
+
+<footer>資料來源：n8n 敏感新聞監測、新聞熱度觀測、社群數據、YouTube 頻道、iii-newsroom。每 10 分鐘自動更新。</footer>
 
 <script>
 // ============================================================
-// 資策會社群數據 Dashboard（P0 優化版）
-// 資料來源：Google Sheets（公開 CSV）
-//   - 月資料：第一個工作表（gid=0），每月一列
-//   - 每日資料：工作表「每日」（TODO：尚未建立，建立後自動啟用日/週粒度、近7天/近30天）
-//   - 貼文資料：工作表「貼文」（TODO：尚未建立，建立後自動啟用 Top Posts）
+// 資料來源設定
 // ============================================================
-const SHEET_ID = '1yC3TtIXVg377qBTsZjA5Yad5HxVRBwX6BE3S4nel9A0';
-// YouTube（另一份已發布到網路的試算表）
-const YT_MONTHLY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=999104727&single=true&output=csv';
-const YT_VIDEOS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=595465853&single=true&output=csv';
-const csvUrl = q => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&${q}`;
-
-// ---------- 指標定義 ----------
-// type: flow = 期間內可加總；snapshot = 取期末值，不可加總；ratio = 由分子/分母計算
-const PLATFORMS = [
-  { id: 'fb', name: 'Facebook', color: '#1877f2', fill: 'rgba(24,119,242,0.10)', prevColor: 'rgba(101,109,118,0.7)',
-    metrics: [
-      { id: 'fb_fans', label: '粉絲總數', type: 'snapshot', def: '粉絲專頁總粉絲數（fan_count），取期末快照，不可跨月加總。' },
-      { id: 'fb_reach', label: '觸及人數', type: 'flow', def: 'page_total_media_view_unique 每日值加總。同一人跨日會重複計算，不等於不重複總人數。' },
-      { id: 'fb_engage', label: '貼文互動', type: 'flow', def: 'page_post_engagements 加總：貼文的按讚、留言、分享、點擊等互動次數。' },
-      { id: 'fb_er', label: '互動率', type: 'ratio', num: 'fb_engage', den: 'fb_reach', def: '貼文互動 ÷ 觸及人數。比較時以「百分點」呈現差異。' },
-      { id: 'fb_follows', label: '新增追蹤', type: 'flow', def: 'page_daily_follows 加總：期間內新增的追蹤數，未扣除取消追蹤，不等於淨增粉絲。' },
-      { id: 'fb_pageviews', label: '頁面瀏覽', type: 'flow', def: 'page_views_total 加總：粉絲專頁被瀏覽的次數。' },
-      { id: 'fb_views', label: '影片觀看', type: 'flow', def: 'page_video_views 加總：影片被觀看的次數。' },
-    ],
-    todo: '貼文數、平均單篇互動、淨增粉絲（需 n8n 另抓貼文清單與取消追蹤數）' },
-  { id: 'ig', name: 'Instagram', color: '#e1306c', fill: 'rgba(225,48,108,0.12)', prevColor: 'rgba(101,109,118,0.7)',
-    metrics: [
-      { id: 'ig_followers', label: '追蹤者數', type: 'snapshot', def: 'followers_count，取期末快照，不可跨月加總。' },
-      { id: 'ig_reach', label: '觸及帳號', type: 'flow', def: 'reach 每日值加總。同一帳號跨日會重複計算。' },
-      { id: 'ig_views', label: '瀏覽次數', type: 'flow', def: 'views：內容被播放或顯示的次數（約等同曝光）。' },
-      { id: 'ig_engage', label: '互動次數', type: 'flow', def: 'total_interactions：貼文、限動、Reels 的按讚、留言、分享、收藏等總數。' },
-      { id: 'ig_er', label: '互動率', type: 'ratio', num: 'ig_engage', den: 'ig_reach', def: '互動次數 ÷ 觸及帳號。比較時以「百分點」呈現差異。' },
-    ],
-    todo: '貼文數、平均單篇互動、淨增追蹤（需 n8n 另抓貼文清單與每日追蹤變化）' },
-  { id: 'th', name: 'Threads', color: '#111113', fill: 'rgba(17,17,19,0.08)', prevColor: 'rgba(101,109,118,0.7)',
-    metrics: [
-      { id: 'th_followers', label: '粉絲數', type: 'snapshot', def: 'Threads 粉絲數（followers_count），取期末快照。' },
-      { id: 'th_views', label: '瀏覽次數', type: 'flow', def: '期間內 Threads 貼文被瀏覽的次數加總。' },
-      { id: 'th_engage', label: '互動次數', type: 'flow', def: '按讚、回覆、轉發、引用加總。' },
-      { id: 'th_er', label: '互動率', type: 'ratio', num: 'th_engage', den: 'th_views', def: '互動次數 ÷ 瀏覽次數。比較時以「百分點」呈現差異。' },
-      { id: 'th_likes', label: '按讚', type: 'flow', def: '期間內貼文獲得的按讚數。' },
-      { id: 'th_replies', label: '回覆', type: 'flow', def: '期間內貼文獲得的回覆數。' },
-      { id: 'th_reposts', label: '轉發與引用', type: 'flow', def: '期間內貼文被轉發與引用的次數。' },
-    ],
-    todo: '每月帳號數據尚未寫入（下一步用 n8n 寫進工作表1），目前只有單篇貼文' },
-  { id: 'yt', name: 'YouTube', color: '#e60023', fill: 'rgba(230,0,35,0.10)', prevColor: 'rgba(101,109,118,0.7)',
-    metrics: [
-      { id: 'yt_views', label: '觀看次數', type: 'flow', def: '頻道所有影片在期間內的總觀看次數（YouTube 後台數據）。' },
-      { id: 'yt_minutes', label: '觀看分鐘數', type: 'flow', def: '期間內觀眾觀看頻道影片的總分鐘數。' },
-      { id: 'yt_avg', label: '平均觀看時長', type: 'ratio', unit: 'min', num: 'yt_minutes', den: 'yt_views', def: '觀看分鐘數 ÷ 觀看次數，代表每次觀看平均看了幾分鐘。' },
-      { id: 'yt_subs', label: '新增訂閱', type: 'flow', def: '期間內新增的訂閱數（未扣除取消訂閱）。' },
-      { id: 'yt_videos', label: '上片數', type: 'flow', def: '期間內新發布的影片數，依影片清單的發布時間計算。' },
-    ],
-    todo: '平均觀看時長與帶來的訂閱數等單支影片深度數據（目前貼文表只存觀看、按讚、留言、分享）', noSnapshot: true },
+const SOURCES = {
+  sensitive: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ244BWCxM4cZAFYCX-HQvlKlr11c8U6weArg_cvg3vgyLar4eTsAokLYPrT6Dptz1xfC1T8iLuKiBt/pub?gid=0&single=true&output=csv',
+  heat: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcN9ArvYVR01tP5qwtFieAtS16o2-_d2Rv6tqBJCvpfb1sVCJXi6D_xecn06MK1vBDVRKEr5c4g88I/pub?gid=0&single=true&output=csv',
+  social: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=0&single=true&output=csv',
+  youtube: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=595465853&single=true&output=csv',
+  youtubeMonthly: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=999104727&single=true&output=csv',
+  youtubeChannel: 'https://www.youtube.com/@weloveIII0724',
+  newsroomBase: 'https://raw.githubusercontent.com/jarenhsu/iii-newsroom/main/data/',
+  newsroomPage: 'https://jarenhsu.github.io/iii-newsroom/',
+};
+const SENSITIVE_DAYS = 7;
+// 新聞熱度：與 news-monitor-iii（Streamlit）相同的規則
+const HEAT_PERIODS = { 7: '過去 7 天', 30: '過去 30 天' };
+let heatDays = 7;
+const HEAT_BLOCKED_SOURCES = ['find.org.tw', '104.com.tw', 'yes123.com.tw', 'jobsdb.com', 'cake.me', 'linkedin.com'];
+const HEAT_KEY_COMBINATIONS = [
+  ['奇美', '資策會'], ['奇美', '醫療AI'], ['奇美', '職能護照'], ['奇美', 'AI人才'], ['奇美', '醫療'],
+  ['高虹安', '論文'], ['高虹安', '抄襲'], ['高虹安', '資策會'], ['高虹安', '期刊'],
+  ['ITS', '資策會'], ['數位轉型', '資策會'], ['職能護照', '醫療'],
 ];
-const METRIC = {};
-PLATFORMS.forEach(p => p.metrics.forEach(m => { METRIC[m.id] = { ...m, platform: p }; }));
+const HEAT_SIMILARITY = 0.3;
+const REFRESH_MS = 10 * 60 * 1000;
 
-// 試算表欄名 → 指標 id
-function detectColumns(headers) {
-  const map = {};
-  headers.forEach(h => {
-    const l = h.toLowerCase();
-    if (l.includes('fb')) {
-      if (l.includes('粉絲') || l.includes('fans')) map.fb_fans = h;
-      else if (l.includes('觸及') || l.includes('reach')) map.fb_reach = h;
-      else if (l.includes('互動') || l.includes('engage')) map.fb_engage = h;
-      else if (l.includes('頁面') || l.includes('page_view')) map.fb_pageviews = h;
-      else if (l.includes('影片') || l.includes('video')) map.fb_views = h;
-      else if (l.includes('追蹤') || l.includes('follow')) map.fb_follows = h;
-    }
-    if (l.startsWith('th')) {
-      if (l.includes('粉絲') || l.includes('follower')) map.th_followers = h;
-      else if (l.includes('瀏覽') || l.includes('view')) map.th_views = h;
-      else if (l.includes('互動') || l.includes('engage')) map.th_engage = h;
-      else if (l.includes('讚') || l.includes('like')) map.th_likes = h;
-      else if (l.includes('回覆') || l.includes('repl')) map.th_replies = h;
-      else if (l.includes('轉發') || l.includes('引用') || l.includes('repost')) map.th_reposts = h;
-      return;
-    }
-    if (l.includes('ig')) {
-      if (l.includes('追蹤') || l.includes('follower')) map.ig_followers = h;
-      else if (l.includes('觸及') || l.includes('reach')) map.ig_reach = h;
-      else if (l.includes('瀏覽') || l.includes('view')) map.ig_views = h;
-      else if (l.includes('互動') || l.includes('interact')) map.ig_engage = h;
-    }
-  });
-  return map;
+const LEVELS = {
+  '超高敏感': { key: 'superHigh', rank: 0 },
+  '高敏感': { key: 'high', rank: 1 },
+  '中敏感': { key: 'medium', rank: 2 },
+};
+
+// ============================================================
+// 工具
+// ============================================================
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function safeUrl(u) {
+  return /^https?:\/\//i.test(u || '') ? esc(u) : '#';
+}
+function fmtNum(n) {
+  return Number.isFinite(n) ? Math.round(n).toLocaleString('zh-TW') : '–';
 }
 
-const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
-let lastMobile = null, resizeTimer = null;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (isMobile() !== lastMobile && DATA.monthly.length) render(); }, 200);
-});
-
-// ---------- 狀態 ----------
-const state = {
-  period: 'ytd', gran: 'month', platform: 'all',
-  customFrom: null, customTo: null,
-  trendMetric: { fb: 'fb_reach', ig: 'ig_reach' },
-  postSort: 'reach',
-};
-const DATA = { monthly: [], daily: [], posts: [], hasPosts: false, videos: [] };
-let charts = {};
-
-// ---------- 工具 ----------
+// 可處理引號、逗號、換行的 CSV 解析
 function parseCSV(text) {
-  const rows = []; let row = [], cur = '', q = false;
+  const rows = []; let row = []; let field = ''; let inQuotes = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
-    if (q) {
-      if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; }
-      else if (c === '"') q = false;
-      else cur += c;
-    } else if (c === '"') q = true;
-    else if (c === ',') { row.push(cur); cur = ''; }
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
+      } else { field += c; }
+    } else if (c === '"') { inQuotes = true; }
+    else if (c === ',') { row.push(field); field = ''; }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && text[i + 1] === '\n') i++;
-      row.push(cur); rows.push(row); row = []; cur = '';
-    } else cur += c;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else { field += c; }
   }
-  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
-  if (rows.length < 2) return { headers: [], rows: [] };
-  const headers = rows[0].map(h => h.trim());
-  const out = rows.slice(1).filter(r => r.some(v => v.trim() !== '')).map(r => {
-    const o = {}; headers.forEach((h, i) => { o[h] = (r[i] ?? '').trim(); }); return o;
-  });
-  return { headers, rows: out };
-}
-const toNum = v => {
-  if (v === undefined || v === null) return null;
-  const s = String(v).replace(/,/g, '').trim();
-  if (s === '') return null;
-  const n = parseFloat(s);
-  return isNaN(n) ? null : n;
-};
-function parseMonth(s) {
-  const m = String(s).match(/(\d{4})[-\/.](\d{1,2})/);
-  return m ? new Date(+m[1], +m[2] - 1, 1) : null;
-}
-function parseDay(s) {
-  const m = String(s).match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
-  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
-}
-const pad = n => String(n).padStart(2, '0');
-const monthKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const addMonths = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, 1);
-const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
-const monthEnd = d => new Date(d.getFullYear(), d.getMonth() + 1, 0);
-const inRange = (d, r) => d >= r.start && d <= r.end;
-
-function fmtNum(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  const a = Math.abs(n);
-  if (a >= 1e8) return (n / 1e8).toFixed(1) + '億';
-  if (a >= 1e4) return (n / 1e4).toFixed(1) + '萬';
-  return Math.round(n).toLocaleString('zh-TW');
-}
-const fmtFull = n => (n === null || n === undefined || isNaN(n)) ? '—' : Number(n).toLocaleString('zh-TW', { maximumFractionDigits: 2 });
-const fmtPct = r => (r === null || r === undefined || isNaN(r)) ? '—' : (r * 100).toFixed(1) + '%';
-const fmtMin = v => (v === null || v === undefined || isNaN(v)) ? '—' : v.toFixed(1) + ' 分';
-const fmtVal = (m, v) => m.unit === 'min' ? fmtMin(v) : m.type === 'ratio' ? fmtPct(v) : fmtNum(v);
-const fmtValFull = (m, v) => m.unit === 'min' ? (v === null ? '—' : v.toFixed(2) + ' 分鐘') : m.type === 'ratio' ? (v === null ? '—' : (v * 100).toFixed(2) + '%') : fmtFull(v);
-
-// ---------- 讀取資料 ----------
-async function fetchSheet(q) {
-  const res = await fetch(csvUrl(q));
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCSV(await res.text());
-}
-function normalize(parsed, kind) {
-  const { headers, rows } = parsed;
-  if (!headers.length) return [];
-  const map = detectColumns(headers);
-  const first = headers[0];
-  return rows.map(r => {
-    const date = kind === 'day' ? parseDay(r[first]) : parseMonth(r[first]);
-    if (!date) return null;
-    const vals = {};
-    Object.keys(map).forEach(id => { vals[id] = toNum(r[map[id]]); });
-    return { date, key: kind === 'day' ? dayKey(date) : monthKey(date), vals };
-  }).filter(Boolean).sort((a, b) => a.date - b.date);
-}
-// 貼文工作表預期欄位（TODO：n8n 尚未寫入）
-// 貼文ID, 平台(FB/IG), 日期, 標題, 觸及, 互動, 留言, 分享, 網址
-function normalizePosts(parsed) {
-  const { headers, rows } = parsed;
-  const find = (...keys) => headers.find(h => keys.some(k => h.toLowerCase().includes(k)));
-  const cPlat = find('平台', 'platform'), cDate = find('日期', 'date'), cTitle = find('標題', '內容', 'title', 'caption');
-  const cReach = find('觸及', 'reach'), cEng = find('互動', 'engage', 'interaction');
-  const cCom = find('留言', 'comment'), cShare = find('分享', 'share'), cUrl = find('網址', 'url', 'link'), cId = find('貼文id', 'post_id');
-  const cImg = find('圖片', 'image', 'picture', 'thumbnail');
-  if (!cPlat || !cDate || !cReach || !cEng) return [];
-  return rows.map(r => {
-    const date = parseDay(r[cDate]); if (!date) return null;
-    const p = String(r[cPlat]).toLowerCase();
-    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : p.includes('yt') || p.includes('youtube') ? 'yt' : (p === 'th' || p.includes('threads')) ? 'th' : null;
-    if (!platform) return null;
-    const reach = toNum(r[cReach]), engage = toNum(r[cEng]);
-    return {
-      id: cId ? r[cId] : '', platform, date, title: cTitle ? r[cTitle] : '(無標題)',
-      reach, engage, comments: cCom ? toNum(r[cCom]) : null, shares: cShare ? toNum(r[cShare]) : null,
-      url: cUrl ? r[cUrl] : '', img: cImg ? r[cImg] : '', er: reach ? engage / reach : null,
-    };
-  }).filter(Boolean);
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  const [header, ...body] = rows.filter(r => r.some(v => v.trim() !== ''));
+  if (!header) return [];
+  const keys = header.map(h => h.trim());
+  return body.map(r => Object.fromEntries(keys.map((k, i) => [k, (r[i] ?? '').trim()])));
 }
 
-async function fetchUrl(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCSV(await res.text());
+async function fetchText(url) {
+  const sep = url.includes('?') ? '&' : '?';
+  const res = await fetch(`${url}${sep}_=${Date.now()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`伺服器回應 ${res.status}`);
+  return res.text();
 }
-// YouTube：月資料併進 DATA.monthly，影片清單另存並換算每月上片數
-function mergeYouTube(monthlyParsed, videosParsed) {
-  const byKey = new Map(DATA.monthly.map(r => [r.key, r]));
-  // 不讓 YouTube 比 FB／IG 多出來的月份變成「最新月份」，避免 FB／IG 本期變成空的
-  const maxDate = DATA.monthly.length ? DATA.monthly[DATA.monthly.length - 1].date : null;
-  const ensure = d => {
-    const k = monthKey(d);
-    if (maxDate && new Date(d.getFullYear(), d.getMonth(), 1) > maxDate) return null;
-    if (!byKey.has(k)) { const r = { date: new Date(d.getFullYear(), d.getMonth(), 1), key: k, vals: {} }; byKey.set(k, r); DATA.monthly.push(r); }
-    return byKey.get(k);
-  };
-  if (monthlyParsed?.headers?.length) {
-    const h = monthlyParsed.headers;
-    const col = (...keys) => h.find(x => keys.some(k => x.includes(k)));
-    const cV = col('觀看次數', 'views'), cM = col('觀看分鐘', '分鐘', 'minutes'), cS = col('訂閱', 'subscriber');
-    monthlyParsed.rows.forEach(r => {
-      const d = parseMonth(r[h[0]]); if (!d) return;
-      const row = ensure(d); if (!row) return;
-      if (cV) row.vals.yt_views = toNum(r[cV]);
-      if (cM) row.vals.yt_minutes = toNum(r[cM]);
-      if (cS) row.vals.yt_subs = toNum(r[cS]);
-    });
+
+// 敏感新聞的日期時間：「2026/10/05」+「16:42」或「下午 4:30:00」
+function parseSheetDateTime(dateStr, timeStr) {
+  const d = (dateStr || '').match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
+  if (!d) return null;
+  let h = 0, m = 0;
+  const t = (timeStr || '').match(/(\d{1,2}):(\d{2})/);
+  if (t) {
+    h = +t[1]; m = +t[2];
+    if (/下午|PM/i.test(timeStr) && h < 12) h += 12;
+    if (/上午|AM/i.test(timeStr) && h === 12) h = 0;
   }
-  const ytPosts = DATA.posts.filter(x => x.platform === 'yt');
-  if (ytPosts.length) {
-    DATA.videos = ytPosts.map(x => ({ date: x.date, title: x.title, url: x.url, id: (x.id || '').replace(/^YT_/, ''), views: x.reach }))
-      .sort((a, b) => b.date - a.date);
-    const first = DATA.videos[DATA.videos.length - 1].date;
-    const firstM = new Date(first.getFullYear(), first.getMonth(), 1);
-    // 貼文表只收今年影片，所以從今年 1 月起算上片數
-    const yStart = new Date(DATA.videos[0].date.getFullYear(), 0, 1);
-    DATA.monthly.forEach(r => { if (r.date >= (yStart < firstM ? yStart : firstM)) r.vals.yt_videos = 0; });
-    DATA.videos.forEach(v => { const row = ensure(v.date); if (row) row.vals.yt_videos = (row.vals.yt_videos || 0) + 1; });
-  } else if (videosParsed?.headers?.length) {
-    const h = videosParsed.headers;
-    const col = (...keys) => h.find(x => keys.some(k => x.includes(k)));
-    const cT = col('發布', 'publish', '時間'), cTitle = col('標題', 'title'), cUrl = col('連結', 'url', 'link'), cId = col('影片ID', 'id');
-    DATA.videos = videosParsed.rows.map(r => {
-      const t = new Date(r[cT]); if (isNaN(t)) return null;
-      const tw = new Date(t.getTime() + 8 * 3600 * 1000); // 轉台灣時間
-      const date = new Date(tw.getUTCFullYear(), tw.getUTCMonth(), tw.getUTCDate());
-      return { date, title: r[cTitle] || '(無標題)', url: r[cUrl] || '', id: r[cId] || '' };
-    }).filter(Boolean).sort((a, b) => b.date - a.date);
-    if (DATA.videos.length) {
-      // 只從清單最早那個月開始算上片數，更早的月份不知道就留空
-      const first = DATA.videos[DATA.videos.length - 1].date;
-      const firstM = new Date(first.getFullYear(), first.getMonth(), 1);
-      DATA.monthly.forEach(r => { if (r.date >= firstM) r.vals.yt_videos = 0; });
-      DATA.videos.forEach(v => { const row = ensure(v.date); if (row) row.vals.yt_videos = (row.vals.yt_videos || 0) + 1; });
+  return new Date(+d[1], +d[2] - 1, +d[3], h, m);
+}
+function fmtMD(date) {
+  return date ? `${date.getMonth() + 1}/${date.getDate()}` : '';
+}
+
+// ============================================================
+// 區塊一：敏感新聞快報
+// ============================================================
+async function loadSensitive() {
+  const levelsEl = document.getElementById('alert-levels');
+  const ticker = document.getElementById('ticker');
+  const list = document.getElementById('alert-list');
+  try {
+    const rows = parseCSV(await fetchText(SOURCES.sensitive));
+    const since = Date.now() - SENSITIVE_DAYS * 86400000;
+    const items = rows
+      .map(r => ({ ...r, when: parseSheetDateTime(r['日期'], r['時間']), level: LEVELS[r['敏感度']] }))
+      .filter(r => r.level && r.when && r.when.getTime() >= since)
+      .sort((a, b) => a.level.rank - b.level.rank || b.when - a.when);
+
+    if (items.length === 0) {
+      levelsEl.innerHTML = '';
+      ticker.innerHTML = '<p class="ticker-empty">近 7 天沒有敏感新聞</p>';
+      list.innerHTML = '';
+      return;
     }
-  }
-  DATA.monthly.sort((a, b) => a.date - b.date);
-}
 
-async function loadData() {
-  const [m, d, p, ym, yv] = await Promise.allSettled([
-    fetchSheet('gid=0'),
-    fetchSheet('sheet=' + encodeURIComponent('每日')),
-    fetchSheet('sheet=' + encodeURIComponent('貼文')),
-    fetchUrl(YT_MONTHLY_URL),
-    fetchUrl(YT_VIDEOS_URL),
-  ]);
-  if (m.status !== 'fulfilled') {
-    showError(`無法讀取數據：${m.reason?.message || m.reason}`, '請確認 Google Sheets 已設定為「知道連結的任何人都能檢視」。');
-    return;
-  }
-  DATA.monthly = normalize(m.value, 'month');
-  // gviz 找不到工作表時會回傳第一個工作表，所以要用欄名驗證
-  if (d.status === 'fulfilled' && /日期|date/i.test(d.value.headers[0] || '')) DATA.daily = normalize(d.value, 'day');
-  if (p.status === 'fulfilled' && (p.value.headers || []).some(h => /平台|platform/i.test(h))) {
-    DATA.posts = normalizePosts(p.value); DATA.hasPosts = true;
-  }
-  mergeYouTube(ym.status === 'fulfilled' ? ym.value : null, yv.status === 'fulfilled' ? yv.value : null);
-  if (!DATA.monthly.length) {
-    document.getElementById('app').innerHTML = `<div class="empty">📊 目前尚無月資料<br><small style="margin-top:8px;display:block">請先透過 n8n 匯入數據到 Google Sheets</small></div>`;
-    return;
-  }
-  const last = DATA.monthly[DATA.monthly.length - 1].key;
-  const ytNote = DATA.videos.length ? `｜YouTube 影片 ${DATA.videos.length} 支` : '';
-  document.getElementById('last-updated').textContent =
-    `資料更新至 ${last}｜月資料 ${DATA.monthly.length} 筆｜每日資料 ${DATA.daily.length ? DATA.daily.length + ' 筆' : '尚無'}｜貼文資料 ${DATA.hasPosts ? DATA.posts.length + ' 筆' : '尚無'}${ytNote}`;
-  // 自訂區間預設：近 3 個月
-  state.customTo = last;
-  state.customFrom = monthKey(addMonths(DATA.monthly[DATA.monthly.length - 1].date, -2));
-  buildMonthSelects();
-  syncControls();
-  render();
-}
-function showError(msg, hint) {
-  document.getElementById('app').innerHTML = `<div class="error-msg">⚠️ ${msg}<br>${hint || ''}</div>`;
-  document.getElementById('last-updated').textContent = '讀取失敗';
-}
-
-// ---------- 期間計算 ----------
-const PERIOD_LABEL = {
-  this_month: '本月', last_month: '上月', last_3m: '近 3 個月', last_6m: '近 6 個月',
-  ytd: '今年', last_7d: '近 7 天', last_30d: '近 30 天', custom: '自訂',
-};
-function resolvePeriod() {
-  const hasDaily = DATA.daily.length > 0;
-  const latestM = DATA.monthly[DATA.monthly.length - 1].date;
-  const mRange = (startM, n) => ({ start: startM, end: monthEnd(addMonths(startM, n - 1)), n });
-  const mLabel = r => r.n === 1 ? monthKey(r.start) : `${monthKey(r.start)} ~ ${monthKey(r.end)}`;
-  let cur, prev, unit = 'month';
-  switch (state.period) {
-    case 'this_month': cur = mRange(latestM, 1); break;
-    case 'last_month': cur = mRange(addMonths(latestM, -1), 1); break;
-    case 'last_3m': cur = mRange(addMonths(latestM, -2), 3); break;
-    case 'last_6m': cur = mRange(addMonths(latestM, -5), 6); break;
-    case 'ytd': { const s = new Date(latestM.getFullYear(), 0, 1); cur = mRange(s, latestM.getMonth() + 1); break; }
-    case 'custom': {
-      let a = parseMonth(state.customFrom), b = parseMonth(state.customTo);
-      if (a > b) [a, b] = [b, a];
-      cur = mRange(a, (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + 1); break;
-    }
-    case 'last_7d': case 'last_30d': {
-      if (!hasDaily) { state.period = 'last_3m'; return resolvePeriod(); }
-      unit = 'day';
-      const n = state.period === 'last_7d' ? 7 : 30;
-      const latestD = DATA.daily[DATA.daily.length - 1].date;
-      cur = { start: addDays(latestD, -(n - 1)), end: latestD, n };
-      prev = { start: addDays(cur.start, -n), end: addDays(cur.start, -1), n };
-      const dl = r => `${dayKey(r.start)} ~ ${dayKey(r.end)}`;
-      return { cur: { ...cur, label: dl(cur) }, prev: { ...prev, label: dl(prev) }, unit };
-    }
-  }
-  // 今年：跟去年同期比（例如 2026-01~09 對比 2025-01~09）
-  prev = state.period === 'ytd' ? mRange(addMonths(cur.start, -12), cur.n) : mRange(addMonths(cur.start, -cur.n), cur.n);
-  return { cur: { ...cur, label: mLabel(cur) }, prev: { ...prev, label: mLabel(prev) }, unit };
-}
-
-// ---------- 彙總 ----------
-function aggregate(rows, m) {
-  if (m.type === 'ratio') {
-    const n = aggregate(rows, METRIC[m.num]), d = aggregate(rows, METRIC[m.den]);
-    return (n === null || !d) ? null : n / d;
-  }
-  const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null && v !== undefined);
-  if (!vals.length) return null;
-  return m.type === 'snapshot' ? vals[vals.length - 1] : vals.reduce((a, b) => a + b, 0);
-}
-// 期間總值：月期間用月資料，日期間用每日資料
-function periodRows(range, unit) {
-  const src = unit === 'day' ? DATA.daily : DATA.monthly;
-  return src.filter(r => inRange(r.date, range));
-}
-// 欄位是否有任何資料（決定要不要顯示）
-function hasMetric(m) {
-  if (m.type === 'ratio') return hasMetric(METRIC[m.num]) && hasMetric(METRIC[m.den]);
-  return DATA.monthly.some(r => r.vals[m.id] !== null && r.vals[m.id] !== undefined)
-      || DATA.daily.some(r => r.vals[m.id] !== null && r.vals[m.id] !== undefined);
-}
-// 比較：處理 null、0、無前期
-function compare(m, cur, prev) {
-  if (cur === null || prev === null) return { kind: 'none' };
-  if (m.type === 'ratio' && m.unit !== 'min') {
-    const pp = (cur - prev) * 100;
-    if (Math.abs(pp) < 0.005) return { kind: 'flat', text: '持平' };
-    const rel = prev ? (cur - prev) / Math.abs(prev) : null;
-    return { kind: pp > 0 ? 'up' : 'down', text: `${pp > 0 ? '+' : ''}${pp.toFixed(1)} 個百分點`, abs: rel !== null ? `(${rel > 0 ? '+' : ''}${(rel * 100).toFixed(1)}%)` : '' };
-  }
-  const diff = cur - prev;
-  if (diff === 0) return { kind: 'flat', text: '持平' };
-  if (prev === 0) return { kind: diff > 0 ? 'up' : 'down', text: '前期為 0', abs: `${diff > 0 ? '+' : ''}${fmtNum(diff)}` };
-  const pct = diff / Math.abs(prev) * 100;
-  return { kind: diff > 0 ? 'up' : 'down', text: `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`, abs: `${diff > 0 ? '+' : '−'}${fmtNum(Math.abs(diff))}` };
-}
-// 依粒度切 bucket
-function buckets(range, unit) {
-  const useMonthly = state.gran === 'month' && unit === 'month';
-  if (useMonthly) {
-    const out = [];
-    for (let d = new Date(range.start); d <= range.end; d = addMonths(d, 1)) {
-      const k = monthKey(d);
-      out.push({ label: k, rows: DATA.monthly.filter(r => r.key === k) });
-    }
-    return out;
-  }
-  const rows = DATA.daily.filter(r => inRange(r.date, range));
-  const groups = new Map();
-  rows.forEach(r => {
-    let k;
-    if (state.gran === 'day') k = dayKey(r.date);
-    else if (state.gran === 'week') { const mon = addDays(r.date, -((r.date.getDay() + 6) % 7)); k = `${dayKey(mon)} 週`; }
-    else k = monthKey(r.date);
-    if (!groups.has(k)) groups.set(k, []);
-    groups.get(k).push(r);
-  });
-  return [...groups.entries()].map(([label, rows]) => ({ label, rows }));
-}
-
-// ---------- 控制項 ----------
-function buildMonthSelects() {
-  const opts = DATA.monthly.map(r => `<option value="${r.key}">${r.key}</option>`).join('');
-  ['from', 'to'].forEach(k => {
-    const el = document.getElementById('custom-' + k);
-    el.innerHTML = opts;
-    el.value = k === 'from' ? state.customFrom : state.customTo;
-  });
-}
-function syncControls() {
-  const hasDaily = DATA.daily.length > 0;
-  document.querySelectorAll('[data-period]').forEach(b => {
-    b.classList.toggle('active', b.dataset.period === state.period);
-    if (b.dataset.needDaily) { b.disabled = !hasDaily; b.title = hasDaily ? '' : '需要每日資料（尚未建立「每日」工作表）'; }
-  });
-  document.querySelectorAll('[data-gran]').forEach(b => {
-    b.classList.toggle('active', b.dataset.gran === state.gran);
-    if (b.dataset.gran !== 'month') { b.disabled = !hasDaily; b.title = hasDaily ? '' : '需要每日資料（尚未建立「每日」工作表）'; }
-  });
-  document.getElementById('custom-range').classList.toggle('show', state.period === 'custom');
-  // 手機版：讓目前選中的區間捲進畫面
-  const act = document.querySelector('[data-period].active');
-  if (act && isMobile()) { const row = act.parentElement; row.scrollLeft = act.offsetLeft - row.offsetLeft - 8; }
-  ['all', 'fb', 'ig', 'th', 'yt'].forEach(p => {
-    document.getElementById('tab-' + p).className = 'platform-tab' + (state.platform === p ? ' active-' + p : '');
-  });
-}
-function setPeriod(p) {
-  state.period = p;
-  if ((p === 'last_7d' || p === 'last_30d') && state.gran === 'month') state.gran = 'day';
-  syncControls(); render();
-}
-function setGran(g) { state.gran = g; syncControls(); render(); }
-function setPlatform(p) { state.platform = p; syncControls(); render(); if (p !== 'all') window.scrollTo({ top: 0, behavior: 'smooth' }); }
-function setCustom() {
-  state.customFrom = document.getElementById('custom-from').value;
-  state.customTo = document.getElementById('custom-to').value;
-  render();
-}
-function setTrendMetric(pid, mid) { state.trendMetric[pid] = mid; render(); }
-function setPostSort(s) { state.postSort = s; render(); }
-
-// ---------- 元件：KpiCard ----------
-function KpiCard(p, m, ctx, sparkId) {
-  const cur = aggregate(periodRows(ctx.cur, ctx.unit), m);
-  const prev = aggregate(periodRows(ctx.prev, ctx.unit), m);
-  const c = compare(m, cur, prev);
-  const arrow = { up: '↑', down: '↓', flat: '→' }[c.kind] || '';
-  const change = c.kind === 'none'
-    ? '<div class="kpi-change flat">— 無前期資料</div>'
-    : `<div class="kpi-change"><span class="delta ${c.kind}">${arrow} ${c.text}</span>${c.abs ? `<span class="abs">${c.abs}</span>` : ''}<span class="abs">較上期</span></div>`;
-  const note = m.type === 'snapshot' ? '（期末）' : '';
-  return `<div class="kpi-card">
-    <div class="kpi-head"><span class="kpi-label">${m.label}${note}</span><span class="info" tabindex="0" data-tip="${m.def}">i</span></div>
-    <div class="kpi-value ${p.id}" title="${fmtValFull(m, cur)}">${fmtVal(m, cur)}</div>
-    ${change}
-    <div class="spark-wrap"><canvas id="${sparkId}"></canvas></div>
-  </div>`;
-}
-// sparkline：期間結束前最近 8 個月
-function sparkSeries(m, ctx) {
-  const endKey = monthKey(ctx.cur.end);
-  const idx = DATA.monthly.findIndex(r => r.key === endKey);
-  const upto = idx >= 0 ? DATA.monthly.slice(0, idx + 1) : DATA.monthly.filter(r => r.date <= ctx.cur.end);
-  return upto.slice(-8).map(r => ({ label: r.key, v: aggregate([r], m) }));
-}
-
-// ---------- 元件：TrendChart ----------
-function TrendChart(p, metrics, ctx) {
-  const sel = metrics.find(m => m.id === state.trendMetric[p.id]) || metrics.find(m => m.type !== 'snapshot') || metrics[0];
-  state.trendMetric[p.id] = sel.id;
-  const chips = metrics.filter(m => m.type !== 'snapshot').map(m =>
-    `<button class="chip ${m.id === sel.id ? 'active' : ''}" onclick="setTrendMetric('${p.id}','${m.id}')">${m.label}</button>`).join('');
-  const granLabel = { day: '每日', week: '每週', month: '每月' }[state.gran];
-  return {
-    html: `<div class="chart-card full">
-      <div class="trend-head">
-        <div><div class="chart-title">${sel.label}趨勢｜本期 vs 上期</div>
-        <div class="chart-sub">${granLabel}｜本期 ${ctx.cur.label}　上期 ${ctx.prev.label}</div></div>
-        <div class="chip-row">${chips}</div>
-      </div>
-      <div class="chart-wrap tall"><canvas id="trend-${p.id}"></canvas></div>
-    </div>`,
-    draw: () => {
-      const cb = buckets(ctx.cur, ctx.unit), pb = buckets(ctx.prev, ctx.unit);
-      const n = Math.max(cb.length, pb.length);
-      const curVals = Array.from({ length: n }, (_, i) => cb[i] ? aggregate(cb[i].rows, sel) : null);
-      const prevVals = Array.from({ length: n }, (_, i) => pb[i] ? aggregate(pb[i].rows, sel) : null);
-      const toY = v => v === null ? null : (sel.unit === 'min' ? +v.toFixed(2) : sel.type === 'ratio' ? +(v * 100).toFixed(2) : v);
-      const single = n <= 1;
-      const labels = Array.from({ length: n }, (_, i) => cb[i]?.label || `第 ${i + 1} 期`);
-      charts['trend-' + p.id] = new Chart(document.getElementById('trend-' + p.id), {
-        type: single ? 'bar' : 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: `本期（${ctx.cur.label}）`, data: curVals.map(toY), borderColor: p.color, backgroundColor: single ? p.color : p.fill,
-              fill: !single, tension: 0.35, pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: '#fff', pointBorderWidth: 2.5, spanGaps: true, borderWidth: 3, borderRadius: 8 },
-            { label: `上期（${ctx.prev.label}）`, data: prevVals.map(toY), borderColor: p.prevColor, backgroundColor: single ? 'rgba(101,109,118,0.35)' : 'transparent',
-              borderDash: [6, 5], tension: 0.35, pointRadius: 3, spanGaps: true, borderWidth: 2, borderRadius: 8 },
-          ],
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { labels: { color: '#55555d', font: { size: isMobile() ? 12 : 14, family: "'Noto Sans TC', sans-serif" }, boxWidth: isMobile() ? 14 : 18, padding: isMobile() ? 10 : 16 } },
-            tooltip: {
-              padding: 12, titleFont: { size: 14 }, bodyFont: { size: 14 }, footerFont: { size: 13 },
-              callbacks: {
-                title: items => { const i = items[0].dataIndex; return `本期 ${cb[i]?.label || '—'}　vs　上期 ${pb[i]?.label || '—'}`; },
-                label: c => `${c.datasetIndex === 0 ? '本期' : '上期'}：${fmtValFull(sel, c.datasetIndex === 0 ? curVals[c.dataIndex] : prevVals[c.dataIndex])}`,
-                afterBody: items => {
-                  const i = items[0].dataIndex, r = compare(sel, curVals[i] ?? null, prevVals[i] ?? null);
-                  return r.kind === 'none' ? '差異：無比較資料' : `差異：${r.text} ${r.abs || ''}`;
-                },
-              },
-            },
-          },
-          scales: {
-            x: { ticks: { color: '#55555d', maxRotation: 0, autoSkipPadding: 12, font: { size: isMobile() ? 11 : 13, family: "'Outfit', 'Noto Sans TC', sans-serif" } }, grid: { color: 'rgba(0,0,0,0.07)' } },
-            y: { beginAtZero: true, ticks: { color: '#55555d', maxTicksLimit: isMobile() ? 5 : 8, font: { size: isMobile() ? 11 : 13, family: "'Outfit', 'Noto Sans TC', sans-serif" }, callback: v => sel.unit === 'min' ? v + ' 分' : sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(0,0,0,0.07)' } },
-          },
-        },
-      });
-    },
-  };
-}
-
-// ---------- 元件：YearSummary（全年度累計，沿用前版需求） ----------
-function YearSummary(p, metrics) {
-  const latest = DATA.monthly[DATA.monthly.length - 1].date;
-  const year = latest.getFullYear();
-  const rows = DATA.monthly.filter(r => r.date.getFullYear() === year);
-  const cards = metrics.filter(m => m.type === 'flow').map(m => {
-    const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null && v !== undefined);
-    const total = vals.reduce((a, b) => a + b, 0);
-    const avg = vals.length ? total / vals.length : null;
-    return `<div class="kpi-card year" style="min-height:auto">
-      <div class="kpi-head"><span class="kpi-label">全年 ${m.label}</span></div>
-      <div class="kpi-value ${p.id}" title="${fmtFull(total)}">${fmtNum(total)}</div>
-      <div class="kpi-change flat">月平均 ${fmtNum(avg)}</div></div>`;
-  }).join('');
-  if (!cards) return '';
-  return `<details class="year-block" open><summary>${year} 全年度累計（${rows[0].key} ~ ${rows[rows.length - 1].key}，共 ${rows.length} 個月）</summary>
-    <div class="kpi-grid">${cards}</div></details>`;
-}
-
-// ---------- 元件：TopPostsTable ----------
-const POST_SORTS = [
-  { id: 'reach', label: '觸及最高', fn: (a, b) => (b.reach ?? -1) - (a.reach ?? -1) },
-  { id: 'comments', label: '留言最多', fn: (a, b) => (b.comments ?? -1) - (a.comments ?? -1) },
-  { id: 'shares', label: '分享最多', fn: (a, b) => (b.shares ?? -1) - (a.shares ?? -1) },
-  { id: 'er', label: '互動率最高', fn: (a, b) => (b.er ?? -1) - (a.er ?? -1) },
-  { id: 'worst', label: '表現最差', fn: (a, b) => (a.er ?? Infinity) - (b.er ?? Infinity) },
-];
-// 貼文縮圖：Meta 的圖片網址會過期，載入失敗就顯示平台色塊
-function Thumb(x) {
-  const ph = `<div class="thumb ph ${x.platform}">${x.platform.toUpperCase()}</div>`;
-  if (!x.img) return ph;
-  const img = `<img class="thumb${x.platform === 'yt' ? ' yt-thumb' : ''}" src="${x.img}" alt="" loading="lazy" referrerpolicy="no-referrer"
-    onerror="this.outerHTML='<div class=&quot;thumb ph ${x.platform}&quot;>${x.platform.toUpperCase()}</div>'">`;
-  return x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${img}</a>` : img;
-}
-// YouTube 本期上片：縮圖用 YouTube 公開縮圖網址，不會過期
-function VideoWall(ctx) {
-  if (!DATA.videos.length) return '';
-  const list = DATA.videos.filter(v => inRange(v.date, ctx.cur));
-  const body = list.length
-    ? `<div class="video-grid">${list.map(v => `<a class="video-card" href="${v.url}" target="_blank" rel="noopener">
-        <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
-        <div class="video-meta"><div class="video-title">${v.title}</div><div class="video-date">${dayKey(v.date)}${v.views != null ? `　▶ ${fmtNum(v.views)} 次觀看` : ''}</div></div>
-      </a>`).join('')}</div>`
-    : '<div class="empty" style="padding:24px">本期間沒有新影片</div>';
-  return `<div class="video-block"><div class="chart-title" style="margin-bottom:14px">本期上片（${list.length} 支）</div>${body}</div>`;
-}
-function TopPostsTable(ctx) {
-  const chips = POST_SORTS.map(s => `<button class="chip ${s.id === state.postSort ? 'active' : ''}" onclick="setPostSort('${s.id}')" ${DATA.hasPosts ? '' : 'disabled'}>${s.label}</button>`).join('');
-  const head = `<div class="section-head"><div class="section-title all">Top Posts 內容排行</div><div class="chip-row">${chips}</div></div>`;
-  if (!DATA.hasPosts) {
-    return `<section class="posts-section">${head}
-      <div class="todo-note"><b>尚缺貼文層級資料。</b>目前試算表只有每月加總，沒有單篇貼文數據，所以排行先保留版面。<br>
-      TODO：在試算表新增工作表「貼文」，欄位為：貼文ID、平台（FB/IG）、日期（YYYY-MM-DD）、標題、觸及、互動、留言、分享、網址、圖片。n8n 寫入後這裡會自動顯示，並跟著期間與平台篩選。</div></section>`;
-  }
-  const list = DATA.posts.filter(x => inRange(x.date, ctx.cur) && (state.platform === 'all' || x.platform === state.platform));
-  if (!list.length) return `<section class="posts-section">${head}<div class="empty">本期間沒有貼文資料</div></section>`;
-  const sorted = [...list].sort(POST_SORTS.find(s => s.id === state.postSort).fn).slice(0, 10);
-  const rows = sorted.map((x, i) => `<tr>
-    <td class="rank">${i + 1}</td>
-    <td class="post"><div class="post-cell">${Thumb(x)}${x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${x.title || '(無標題)'}</a>` : `<span>${x.title || '(無標題)'}</span>`}</div></td>
-    <td class="plat"><span class="tag ${x.platform}">${x.platform.toUpperCase()}</span></td>
-    <td class="date">${dayKey(x.date)}</td>
-    <td class="num" data-label="觸及" title="${fmtFull(x.reach)}">${fmtNum(x.reach)}</td>
-    <td class="num" data-label="互動數" title="${fmtFull(x.engage)}">${fmtNum(x.engage)}</td>
-    <td class="num" data-label="互動率">${fmtPct(x.er)}</td></tr>`).join('');
-  return `<section class="posts-section">${head}<div class="table-wrap"><table class="posts">
-    <thead><tr><th>排名</th><th>貼文 / 標題</th><th>平台</th><th>日期</th><th class="num">觸及</th><th class="num">互動數</th><th class="num">互動率</th></tr></thead>
-    <tbody>${rows}</tbody></table></div></section>`;
-}
-
-
-// ---------- 全部平台：精簡總覽 ----------
-const OVERVIEW_KEYS = {
-  fb: { reach: 'fb_reach', reachLabel: '觸及人數', engage: 'fb_engage', engageLabel: '貼文互動' },
-  ig: { reach: 'ig_reach', reachLabel: '觸及帳號', engage: 'ig_engage', engageLabel: '互動次數' },
-  th: { reach: 'th_views', reachLabel: '瀏覽次數', engage: 'th_engage', engageLabel: '互動次數' },
-  yt: { reach: 'yt_views', reachLabel: '觀看次數', engage: 'yt_minutes', engageLabel: '觀看分鐘', engageIsMinutes: true },
-};
-function ovDelta(m, cur, prev) {
-  const c = compare(m, cur, prev);
-  if (c.kind === 'none') return '<span class="ov-delta none">— 無前期</span>';
-  const arrow = { up: '▲', down: '▼', flat: '■' }[c.kind];
-  return `<span class="ov-delta ${c.kind}">${arrow} ${c.text}</span>`;
-}
-function Overview(ctx, jobs) {
-  const sum = (id, range) => aggregate(periodRows(range, ctx.unit), METRIC[id]);
-  const plats = PLATFORMS.filter(p => OVERVIEW_KEYS[p.id] && hasMetric(METRIC[OVERVIEW_KEYS[p.id].reach]));
-  if (!plats.length) return '';
-  const rows = plats.map(p => {
-    const k = OVERVIEW_KEYS[p.id];
-    return { p, k,
-      reach: sum(k.reach, ctx.cur), reachPrev: sum(k.reach, ctx.prev),
-      eng: hasMetric(METRIC[k.engage]) ? sum(k.engage, ctx.cur) : null,
-      engPrev: hasMetric(METRIC[k.engage]) ? sum(k.engage, ctx.prev) : null };
-  });
-  // 總計：觸及＋觀看全部加總；互動只算 FB、IG、Threads（YouTube 的分鐘數不是互動）
-  const tot = (key, filter) => {
-    const v = rows.filter(filter).map(r => r[key]).filter(x => x !== null);
-    return v.length ? v.reduce((a, b) => a + b, 0) : null;
-  };
-  const flowM = { type: 'flow' };
-  const totReach = tot('reach', () => true), totReachPrev = tot('reachPrev', () => true);
-  const isEng = r => !r.k.engageIsMinutes;
-  const totEng = tot('eng', isEng), totEngPrev = tot('engPrev', isEng);
-  const share = rows.map(r => ({ p: r.p, v: r.reach || 0 }));
-  const shareTotal = share.reduce((a, b) => a + b.v, 0) || 1;
-
-  const bar = share.map(x => `<div class="ov-seg ${x.p.id}" style="flex:${x.v}" title="${x.p.name} ${fmtFull(x.v)}"></div>`).join('');
-  const legend = share.map(x => `<span class="ov-leg"><i class="${x.p.id}"></i>${x.p.name}<b>${(x.v / shareTotal * 100).toFixed(0)}%</b></span>`).join('');
-
-  const cards = rows.map(r => {
-    const sid = `ovspark-${r.p.id}`;
-    jobs.push(() => drawSparkDark(sid, r.p, METRIC[r.k.reach], ctx));
-    const engM = r.k.engageIsMinutes ? flowM : METRIC[r.k.engage] || flowM;
-    return `<button class="ov-card ${r.p.id}" onclick="setPlatform('${r.p.id}')">
-      <div class="ov-card-head"><span class="ov-chip ${r.p.id}">${r.p.name}</span><span class="ov-go">詳細 →</span></div>
-      <div class="ov-metric">
-        <div class="ov-label">${r.k.reachLabel}</div>
-        <div class="ov-num" data-count="${r.reach ?? ''}" title="${fmtFull(r.reach)}">${fmtNum(r.reach)}</div>
-        ${ovDelta(flowM, r.reach, r.reachPrev)}
-      </div>
-      <div class="ov-metric sub">
-        <div class="ov-label">${r.k.engageLabel}</div>
-        <div class="ov-num small" title="${fmtFull(r.eng)}">${fmtNum(r.eng)}</div>
-        ${ovDelta(engM, r.eng, r.engPrev)}
-      </div>
-      <div class="ov-spark"><canvas id="${sid}"></canvas></div>
-    </button>`;
-  }).join('');
-
-  return `<section class="overview">
-    <div class="ov-hero">
-      <div class="ov-hero-top">
-        <span class="ov-kicker">ALL PLATFORMS · ${ctx.cur.label}</span>
-        <span class="ov-kicker dim">vs ${ctx.prev.label}</span>
-      </div>
-      <div class="ov-totals">
-        <div class="ov-total">
-          <div class="ov-label">全平台觸及與觀看</div>
-          <div class="ov-big" data-count="${totReach ?? ''}" title="${fmtFull(totReach)}">${fmtNum(totReach)}</div>
-          ${ovDelta(flowM, totReach, totReachPrev)}
-        </div>
-        <div class="ov-total">
-          <div class="ov-label">全平台互動</div>
-          <div class="ov-big" data-count="${totEng ?? ''}" title="${fmtFull(totEng)}">${fmtNum(totEng)}</div>
-          ${ovDelta(flowM, totEng, totEngPrev)}
-        </div>
-      </div>
-      <div class="ov-share">
-        <div class="ov-bar">${bar}</div>
-        <div class="ov-legend">${legend}</div>
-      </div>
-      <div class="ov-note">觸及與觀看為各平台觸及人數、觸及帳號、瀏覽次數、影片觀看次數加總；互動為 FB、IG、Threads 加總（YouTube 以觀看分鐘呈現，不列入互動）。點下方平台卡片看完整數據。</div>
-    </div>
-    <div class="ov-grid">${cards}</div>
-  </section>`;
-}
-function drawSparkDark(id, p, m, ctx) {
-  const s = sparkSeries(m, ctx);
-  if (s.filter(x => x.v !== null).length < 2) return;
-  const el = document.getElementById(id); if (!el) return;
-  const g = el.getContext('2d').createLinearGradient(0, 0, 0, 60);
-  g.addColorStop(0, 'rgba(255,255,255,0.28)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-  charts[id] = new Chart(el, {
-    type: 'line',
-    data: { labels: s.map(x => x.label), datasets: [{ data: s.map(x => x.v), borderColor: OV_LINE[p.id] || '#fff', backgroundColor: g, fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4, spanGaps: true }] },
-    options: { responsive: true, maintainAspectRatio: false, animation: false,
-      plugins: { legend: { display: false }, tooltip: { displayColors: false, callbacks: { label: c => fmtValFull(m, c.raw) } } },
-      scales: { x: { display: false }, y: { display: false } } },
-  });
-}
-const OV_LINE = { fb: '#5aa2ff', ig: '#ff5fa2', th: '#e8e8ee', yt: '#ff5a5f' };
-// 數字跳動
-function countUp() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  document.querySelectorAll('.overview [data-count]').forEach(el => {
-    const target = parseFloat(el.dataset.count); if (isNaN(target)) return;
-    const t0 = performance.now(), dur = 900;
-    const step = t => {
-      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      el.textContent = fmtNum(target * e);
-      if (k < 1) requestAnimationFrame(step); else el.textContent = fmtNum(target);
-    };
-    requestAnimationFrame(step);
-  });
-}
-
-// ---------- 主畫面 ----------
-function render() {
-  if (!DATA.monthly.length) return;
-  lastMobile = isMobile();
-  const ctx = resolvePeriod();
-  syncControls();
-  document.getElementById('period-caption').innerHTML =
-    `本期 <b>${ctx.cur.label}</b>　對比上期 <b>${ctx.prev.label}</b>　｜流量類指標為期間加總，粉絲與追蹤者取期末值`;
-
-  Object.values(charts).forEach(c => c.destroy());
-  charts = {};
-  const jobs = [];
-  let html = '';
-
-  if (state.platform === 'all') html += Overview(ctx, jobs);
-  PLATFORMS.filter(p => state.platform === p.id).forEach(p => {
-    const metrics = p.metrics.filter(hasMetric);
-    if (!metrics.length) return;
-    const kpis = metrics.map((m, i) => {
-      const sid = `spark-${p.id}-${i}`;
-      jobs.push(() => drawSpark(sid, p, m, ctx));
-      return KpiCard(p, m, ctx, sid);
+    levelsEl.innerHTML = Object.entries(LEVELS).map(([label, lv]) => {
+      const n = items.filter(i => i.level.key === lv.key).length;
+      return n ? `<span class="lv-chip chip-${lv.key}">${label}<b>${n}</b></span>` : '';
     }).join('');
-    const trend = TrendChart(p, metrics, ctx);
-    jobs.push(trend.draw);
-    html += `<section class="platform-section">
-      <div class="section-title ${p.id}">${p.name}</div>
-      <div class="kpi-grid">${kpis}</div>
-      <div class="charts-grid">${trend.html}</div>
-      ${p.id === 'yt' ? VideoWall(ctx) : ''}
-      ${YearSummary(p, metrics)}
-      <div class="todo-note"><b>尚缺資料：</b>${p.todo}${p.noSnapshot || metrics.some(m => m.type === 'snapshot') ? '' : '；粉絲／追蹤者快照尚未寫入，有資料後會自動出現'}</div>
-    </section>`;
-  });
-  html += TopPostsTable(ctx);
 
-  document.getElementById('app').innerHTML = html || '<div class="empty">沒有可顯示的資料，請確認試算表欄位名稱</div>';
-  jobs.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
-  if (state.platform === 'all') countUp();
-}
-function drawSpark(id, p, m, ctx) {
-  const s = sparkSeries(m, ctx);
-  if (s.filter(x => x.v !== null).length < 2) return;
-  charts[id] = new Chart(document.getElementById(id), {
-    type: 'line',
-    data: { labels: s.map(x => x.label), datasets: [{ data: s.map(x => x.v), borderColor: p.color, borderWidth: 2.5, pointRadius: 0, tension: 0.35, fill: false, spanGaps: true }] },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
-      plugins: { legend: { display: false }, tooltip: { enabled: true, displayColors: false, callbacks: { label: c => fmtValFull(m, c.raw) } } },
-      scales: { x: { display: false }, y: { display: false } },
-    },
-  });
+    const itemHtml = i => `
+      <a class="tick-item" href="${safeUrl(i['連結'])}" target="_blank" rel="noopener">
+        <span class="tick-lv lv-${i.level.key}">${esc(i['敏感度'])}</span>
+        <span class="tick-title">${esc(i['標題'])}</span>
+        <span class="tick-date">${esc(i['來源'])}　${fmtMD(i.when)}</span>
+      </a>`;
+    const once = items.map(itemHtml).join('');
+    // 內容複製兩份，讓跑馬燈無縫循環
+    ticker.innerHTML = `<div class="ticker-track" style="--dur:${Math.max(30, items.length * 12)}s">${once}${once}</div>`;
+    list.innerHTML = items.map(i => `<li>${itemHtml(i)}</li>`).join('');
+  } catch (err) {
+    ticker.innerHTML = `<p class="ticker-empty">敏感新聞讀取失敗：${esc(err.message)}</p>`;
+  }
 }
 
-loadData().catch(e => showError(`發生錯誤：${e.message}`));
+// ============================================================
+// 區塊二：新聞熱度前五名（移植自 news-monitor-iii 的分群邏輯）
+// ============================================================
 
+// 等同 Python difflib.SequenceMatcher(None, a, b).ratio()
+function seqRatio(a, b) {
+  const A = [...a], B = [...b];
+  const total = A.length + B.length;
+  if (!total) return 1;
+  function longest(alo, ahi, blo, bhi) {
+    let best = [alo, blo, 0];
+    let prev = new Map();
+    for (let i = alo; i < ahi; i++) {
+      const cur = new Map();
+      for (let j = blo; j < bhi; j++) {
+        if (A[i] === B[j]) {
+          const k = (prev.get(j - 1) || 0) + 1;
+          cur.set(j, k);
+          if (k > best[2]) best = [i - k + 1, j - k + 1, k];
+        }
+      }
+      prev = cur;
+    }
+    return best;
+  }
+  function matched(alo, ahi, blo, bhi) {
+    const [i, j, k] = longest(alo, ahi, blo, bhi);
+    if (!k) return 0;
+    return k + matched(alo, i, blo, j) + matched(i + k, ahi, j + k, bhi);
+  }
+  return (2 * matched(0, A.length, 0, B.length)) / total;
+}
+
+function shareKeyCombination(a, b) {
+  return HEAT_KEY_COMBINATIONS.some(combo => combo.every(w => a.includes(w)) && combo.every(w => b.includes(w)));
+}
+function commonHanCount(a, b) {
+  const setB = new Set(b);
+  return [...new Set(a)].filter(c => c >= '\u4e00' && c <= '\u9fff' && setB.has(c)).length;
+}
+
+// 相似標題歸成一組，熱度 = 不重複媒體家數，代表標題取最長的那則
+function groupSimilarTitles(items) {
+  const used = new Set();
+  const result = [];
+  items.forEach((a, i) => {
+    if (used.has(i)) return;
+    const group = [i];
+    used.add(i);
+    items.forEach((b, j) => {
+      if (used.has(j)) return;
+      if (commonHanCount(a.title, b.title) >= 6 || seqRatio(a.title, b.title) >= HEAT_SIMILARITY || shareKeyCombination(a.title, b.title)) {
+        group.push(j);
+        used.add(j);
+      }
+    });
+    const media = [...new Set(group.flatMap(k => items[k].media).filter(m => m && m !== 'nan'))];
+    const rep = group.reduce((best, k) => (items[k].title.length > items[best].title.length ? k : best), group[0]);
+    result.push({ ...items[rep], media, heat: media.length });
+  });
+  return result.sort((x, y) => y.heat - x.heat);
+}
+
+let heatRows = null;
+
+async function loadHeat() {
+  const box = document.getElementById('heat');
+  try {
+    heatRows = parseCSV(await fetchText(SOURCES.heat));
+    renderHeat();
+  } catch (err) {
+    box.innerHTML = `<p class="state error">新聞熱度讀取失敗：${esc(err.message)}。請確認新聞熱度的 Sheets 仍為發布到網路的狀態。</p>`;
+  }
+}
+
+function renderHeat() {
+  const box = document.getElementById('heat');
+  document.querySelectorAll('.period-btn[data-days]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.days === heatDays)));
+  if (!heatRows) return;
+
+  const since = Date.now() - heatDays * 86400000;
+  const seen = new Set();
+  const items = [];
+  for (const r of heatRows) {
+    const when = new Date(r['published_at']);
+    const title = r['title'] || '';
+    if (isNaN(when) || when.getTime() < since) continue;
+    if (HEAT_BLOCKED_SOURCES.includes(r['source'])) continue;
+    if (!title.includes('資策會')) continue;
+    if (seen.has(title)) continue;
+    seen.add(title);
+    const media = r['media_list'] ? r['media_list'].split(' · ') : [r['source'] || '未知來源'];
+    items.push({ title, url: r['url'], when, keyword: r['keyword'], media });
+  }
+  // 與原本相同，分群做兩次
+  const top = groupSimilarTitles(groupSimilarTitles(items)).slice(0, 5);
+
+  if (top.length === 0) {
+    box.innerHTML = `<p class="state">${HEAT_PERIODS[heatDays]}沒有提到資策會的新聞，可以切換到較長的區間看看。</p>`;
+    return;
+  }
+  box.innerHTML = `<ol class="heat-list">${top.map((g, i) => {
+    const shown = g.media.slice(0, 4).join('、') + (g.media.length > 4 ? ` 等 ${g.media.length} 家` : '');
+    return `
+      <li class="heat-item">
+        <span class="heat-rank" aria-label="第 ${i + 1} 名">${i + 1}</span>
+        <a class="heat-title" href="${safeUrl(g.url)}" target="_blank" rel="noopener">${esc(g.title)}</a>
+        <span class="heat-count"><b>${g.heat}</b><span>家媒體</span></span>
+        <span class="heat-media">${esc(shown)}　${fmtMD(g.when)}</span>
+      </li>`;
+  }).join('')}</ol>`;
+}
+
+// ============================================================
+// 區塊三：社群月度表現（FB、IG 分開呈現）
+// ============================================================
+function num(v) {
+  const n = Number(String(v ?? '').replace(/,/g, ''));
+  return String(v ?? '').trim() === '' || isNaN(n) ? NaN : n;
+}
+function changeHtml(cur, prev) {
+  if (!Number.isFinite(cur) || !Number.isFinite(prev) || prev === 0) return '';
+  const pct = Math.round(((cur - prev) / prev) * 100);
+  if (pct === 0) return '<span class="chg">持平</span>';
+  return pct > 0
+    ? `<span class="chg up">▲ ${pct}%</span>`
+    : `<span class="chg down">▼ ${Math.abs(pct)}%</span>`;
+}
+function sparkline(values, color) {
+  const pts = values.map((v, i) => [i, v]).filter(([, v]) => Number.isFinite(v));
+  if (pts.length < 2) return '';
+  const w = 150, h = 46, pad = 4;
+  const max = Math.max(...pts.map(p => p[1])), min = Math.min(...pts.map(p => p[1]));
+  const x = i => pad + (i / (values.length - 1)) * (w - pad * 2);
+  const y = v => h - pad - (max === min ? 0.5 : (v - min) / (max - min)) * (h - pad * 2);
+  const d = pts.map(([i, v], k) => `${k ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const [li, lv] = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="近 ${values.length} 個月趨勢">
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(li).toFixed(1)}" cy="${y(lv).toFixed(1)}" r="3.5" fill="${color}"/>
+  </svg>`;
+}
+// 存量型欄位（粉絲數、追蹤者數）年度模式取最新值，不加總
+const SOCIAL_STOCK_COLS = ['FB粉絲總數', 'IG追蹤者數', 'TH粉絲數'];
+const SOCIAL_PLATFORMS = [
+  {
+    name: 'Facebook', cls: 'fb', color: '#1877f2', source: 'meta',
+    main: { col: 'FB觸及人數', label: '觸及人數' },
+    others: [
+      { col: 'FB貼文互動', label: '貼文互動' },
+      { col: 'FB頁面瀏覽', label: '頁面瀏覽' },
+      { col: 'FB新增追蹤', label: '新增追蹤' },
+      { col: 'FB影片觀看', label: '影片觀看' },
+      { col: 'FB粉絲總數', label: '粉絲總數' },
+    ],
+  },
+  {
+    name: 'Instagram', cls: 'ig', color: '#e1306c', source: 'meta',
+    main: { col: 'IG瀏覽次數', label: '瀏覽次數' },
+    others: [
+      { col: 'IG觸及帳號', label: '觸及帳號' },
+      { col: 'IG互動次數', label: '互動次數' },
+      { col: 'IG追蹤者數', label: '追蹤者數' },
+    ],
+  },
+  {
+    name: 'Threads', cls: 'th', color: '#000000', source: 'meta',
+    main: { col: 'TH瀏覽次數', label: '瀏覽次數' },
+    others: [
+      { col: 'TH互動次數', label: '互動次數' },
+      { col: 'TH按讚', label: '按讚' },
+      { col: 'TH回覆', label: '回覆' },
+      { col: 'TH轉發引用', label: '轉發引用' },
+      { col: 'TH粉絲數', label: '粉絲數' },
+    ],
+  },
+  {
+    name: 'YouTube', cls: 'yt', color: '#ff0000', source: 'youtube',
+    main: { col: '觀看次數', label: '觀看次數' },
+    others: [
+      { col: '曝光次數', label: '曝光次數' },
+      { col: '觀看時數', label: '觀看時數（小時）' },
+      { col: '新增訂閱', label: '新增訂閱' },
+    ],
+  },
+];
+let ytRows = [];
+let socialRows = null;
+let socialMode = 'year';
+
+function platformHtml(p, rows) {
+  const valid = rows.filter(r => Number.isFinite(num(r[p.main.col])));
+  if (valid.length === 0) return `<div class="platform ${p.cls}"><h3>${p.name}</h3><p class="state">尚無資料</p></div>`;
+  const series = rows.map(r => num(r[p.main.col]));
+
+  if (socialMode === 'year') {
+    const year = valid[valid.length - 1]['月份'].slice(0, 4);
+    const yr = valid.filter(r => r['月份'].startsWith(year));
+    const firstM = +yr[0]['月份'].slice(5), lastM = +yr[yr.length - 1]['月份'].slice(5);
+    const yearValue = col => {
+      const vals = yr.map(r => num(r[col])).filter(Number.isFinite);
+      if (vals.length === 0) return NaN;
+      return SOCIAL_STOCK_COLS.includes(col) ? vals[vals.length - 1] : vals.reduce((a, b) => a + b, 0);
+    };
+    const metric = m => {
+      const v = yearValue(m.col);
+      return Number.isFinite(v) ? `<span class="metric">${m.label} <b>${fmtNum(v)}</b></span>` : '';
+    };
+    return `
+      <div class="platform ${p.cls}">
+        <h3>${p.name}　${year} 年 ${firstM === lastM ? firstM : `${firstM} 至 ${lastM}`} 月累計</h3>
+        <div class="platform-main">
+          <div>
+            <div class="big-num">${fmtNum(yearValue(p.main.col))}</div>
+            <div class="big-label">${p.main.label}</div>
+          </div>
+          ${sparkline(yr.map(r => num(r[p.main.col])), '#ffffff')}
+        </div>
+        <div class="metrics">${p.others.map(metric).join('')}</div>
+      </div>`;
+  }
+
+  const cur = valid[valid.length - 1];
+  const prev = valid[valid.length - 2];
+  const metric = m => {
+    const c = num(cur[m.col]);
+    if (!Number.isFinite(c)) return '';
+    return `<span class="metric">${m.label} <b>${fmtNum(c)}</b>${prev ? changeHtml(c, num(prev[m.col])) : ''}</span>`;
+  };
+  return `
+    <div class="platform ${p.cls}">
+      <h3>${p.name}　${esc(cur['月份'])}</h3>
+      <div class="platform-main">
+        <div>
+          <div class="big-num">${fmtNum(num(cur[p.main.col]))}${prev ? changeHtml(num(cur[p.main.col]), num(prev[p.main.col])) : ''}</div>
+          <div class="big-label">${p.main.label}</div>
+        </div>
+        ${sparkline(series, '#ffffff')}
+      </div>
+      <div class="metrics">${p.others.map(metric).join('')}</div>
+    </div>`;
+}
+
+function renderSocial() {
+  const box = document.getElementById('social');
+  document.querySelectorAll('.social-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === socialMode)));
+  if (!socialRows) return;
+  const latest = socialRows[socialRows.length - 1]['月份'];
+  box.innerHTML = `<div class="social-grid">${SOCIAL_PLATFORMS.map(p => platformHtml(p, p.source === 'youtube' ? ytRows : socialRows)).join('')}</div>`;
+}
+
+async function loadSocial() {
+  const box = document.getElementById('social');
+  try {
+    const rows = parseCSV(await fetchText(SOURCES.social))
+      .filter(r => /^\d{4}-\d{2}$/.test(r['月份']))
+      .sort((a, b) => a['月份'].localeCompare(b['月份']));
+    if (rows.length === 0) {
+      box.innerHTML = '<p class="state">社群數據還沒有任何月份的資料。</p>';
+      return;
+    }
+    socialRows = rows;
+    try {
+      ytRows = parseCSV(await fetchText(SOURCES.youtubeMonthly))
+        .filter(r => /^\d{4}-\d{2}$/.test(r['月份']))
+        .sort((a, b) => a['月份'].localeCompare(b['月份']))
+        .map(r => ({ ...r, '觀看時數': Number.isFinite(num(r['觀看分鐘數'])) ? num(r['觀看分鐘數']) / 60 : '' }));
+    } catch (e) {
+      ytRows = [];
+    }
+    renderSocial();
+  } catch (err) {
+    box.innerHTML = `<p class="state error">社群數據讀取失敗：${esc(err.message)}。請確認社群數據的 Sheets 仍為發布到網路的狀態。</p>`;
+  }
+}
+
+// ============================================================
+// 區塊：YouTube 最新影片
+// ============================================================
+async function loadVideos() {
+  const box = document.getElementById('videos');
+  try {
+    const rows = parseCSV(await fetchText(SOURCES.youtube))
+      .map(r => ({ ...r, when: new Date(r['發布時間']) }))
+      .filter(r => r['影片ID'] && !isNaN(r.when))
+      .sort((a, b) => b.when - a.when)
+      .slice(0, 3);
+    if (rows.length === 0) {
+      box.innerHTML = '<p class="state">還沒有影片資料。請確認 n8n 的 YouTube 流程有正常寫入。</p>';
+      return;
+    }
+    box.innerHTML = `<div class="video-grid">${rows.map(v => {
+      const id = encodeURIComponent(v['影片ID']);
+      const date = `${v.when.getFullYear()}/${v.when.getMonth() + 1}/${v.when.getDate()}`;
+      return `
+        <a class="video-card" href="${safeUrl(v['連結'])}" target="_blank" rel="noopener">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="play" aria-hidden="true"></span>
+          </div>
+          <div class="video-body">
+            <p class="video-title">${esc(v['標題'])}</p>
+            <div class="video-date">${date} 上架</div>
+          </div>
+        </a>`;
+    }).join('')}</div>`;
+  } catch (err) {
+    box.innerHTML = `<p class="state error">YouTube 影片讀取失敗：${esc(err.message)}。請確認「YouTube影片」分頁仍為發布到網路的狀態。</p>`;
+  }
+}
+
+// ============================================================
+// 區塊四：新聞露出年度總覽（彙整 iii-newsroom 當年度所有月份）
+// ============================================================
+async function loadReport() {
+  const box = document.getElementById('report');
+  try {
+    const manifest = JSON.parse(await fetchText(SOURCES.newsroomBase + 'manifest.json'));
+    const allMonths = (manifest.months || []).slice().sort();
+    if (allMonths.length === 0) throw new Error('月報清單是空的');
+    const year = allMonths[allMonths.length - 1].slice(0, 4);   // 以最新月份所在年度為準
+    const months = allMonths.filter(m => m.startsWith(year));
+    const data = await Promise.all(months.map(async m => JSON.parse(await fetchText(`${SOURCES.newsroomBase}${m}.json`))));
+
+    // 彙整
+    let total = 0, positive = 0, neutral = 0, negative = 0;
+    const mediaMap = new Map();
+    const deptMap = new Map();
+    const monthly = [];
+    data.forEach((d, i) => {
+      total += d.total || 0; positive += d.positive || 0; neutral += d.neutral || 0; negative += d.negative || 0;
+      monthly.push({ month: +months[i].slice(5, 7), total: d.total || 0 });
+      (d.topMedia || []).forEach(m => mediaMap.set(m.name, (mediaMap.get(m.name) || 0) + (m.count || 0)));
+      (d.depts || []).forEach(x => {
+        const cur = deptMap.get(x.id) || { ...x, total: 0 };
+        cur.total += x.total || 0;
+        deptMap.set(x.id, cur);
+      });
+    });
+    const firstM = monthly[0].month, lastM = monthly[monthly.length - 1].month;
+    const rangeLabel = firstM === lastM ? `${year} 年 ${firstM} 月` : `${year} 年 ${firstM} 至 ${lastM} 月`;
+    document.getElementById('report-h').textContent = `${year} 年新聞露出`;
+
+    const senti = [
+      { label: '正面', n: positive, color: '#141414' },
+      { label: '中立', n: neutral, color: '#c9c9c9' },
+      { label: '負面', n: negative, color: '#f04e23' },
+    ];
+    const pct = n => (total ? (n / total) * 100 : 0);
+    // topMedia 每月只列前幾名，加總後是「各月排行榜上」的累計，作為年度參考
+    const media = [...mediaMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const depts = [...deptMap.values()].sort((a, b) => b.total - a.total);
+    const maxDept = Math.max(1, ...depts.map(x => x.total));
+    const maxMonth = Math.max(1, ...monthly.map(m => m.total));
+
+    box.innerHTML = `<div class="report-grid">
+      <div>
+        <div class="report-total">${fmtNum(total)}<small>則報導</small></div>
+        <div class="senti-bar" role="img" aria-label="正面 ${positive} 則、中立 ${neutral} 則、負面 ${negative} 則">
+          ${senti.map(x => `<span style="width:${pct(x.n)}%;background:${x.color}"></span>`).join('')}
+        </div>
+        <div class="senti-legend">
+          ${senti.map(x => `<span><i class="dot" style="background:${x.color}"></i>${x.label} ${fmtNum(x.n)}</span>`).join('')}
+        </div>
+        <p class="sub-h month-h">每月報導則數</p>
+        <div class="month-bars" role="img" aria-label="${monthly.map(m => `${m.month} 月 ${m.total} 則`).join('、')}">
+          ${monthly.map(m => `
+            <div class="month-bar">
+              <span class="mb-num">${fmtNum(m.total)}</span>
+              <span class="mb-col"><span style="height:${(m.total / maxMonth) * 100}%"></span></span>
+              <span class="mb-label">${m.month}月</span>
+            </div>`).join('')}
+        </div>
+        <a class="more-link" href="${SOURCES.newsroomPage}" target="_blank" rel="noopener">開啟完整月報</a>
+      </div>
+      <div>
+        <p class="sub-h">報導最多的媒體</p>
+        <ul class="media-list">
+          ${media.map(([name, count]) => `<li><span>${esc(name)}</span><b>${fmtNum(count)}</b></li>`).join('')}
+        </ul>
+      </div>
+      <div>
+        <p class="sub-h">各單位露出</p>
+        ${depts.map((x, di) => `
+          <div class="dept-row">
+            <span>${esc(x.short || x.name)}</span>
+            <span class="dept-bar"><span style="width:${(x.total / maxDept) * 100}%;background:${di === 0 ? 'var(--accent)' : 'var(--ink)'}"></span></span>
+            <b>${fmtNum(x.total)}</b>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  } catch (err) {
+    box.innerHTML = `<p class="state error">新聞露出資料讀取失敗：${esc(err.message)}。請確認 iii-newsroom 的 data/manifest.json 存在。</p>`;
+  }
+}
+
+// ============================================================
+// 啟動
+// ============================================================
+async function loadAll() {
+  const btn = document.getElementById('refresh');
+  btn.disabled = true;
+  await Promise.allSettled([loadSensitive(), loadHeat(), loadSocial(), loadVideos(), loadReport()]);
+  const now = new Date();
+  document.getElementById('updated').textContent =
+    `更新於 ${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  btn.disabled = false;
+}
+document.getElementById('refresh').addEventListener('click', loadAll);
+document.querySelectorAll('.period-btn[data-days]').forEach(btn => btn.addEventListener('click', () => {
+  heatDays = +btn.dataset.days;
+  renderHeat();
+}));
+document.querySelectorAll('.social-btn').forEach(btn => btn.addEventListener('click', () => {
+  socialMode = btn.dataset.mode;
+  renderSocial();
+}));
+loadAll();
+setInterval(loadAll, REFRESH_MS);
 </script>
 </body>
 </html>
