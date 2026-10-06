@@ -1228,7 +1228,7 @@ function KpiCard(p, m, ctx, sparkId) {
   const c = compare(m, cur, prev);
   const arrow = { up: '↑', down: '↓', flat: '→' }[c.kind] || '';
   const change = c.kind === 'none'
-    ? '<div class="kpi-change flat">— 無前期資料</div>'
+    ? ''
     : `<div class="kpi-change"><span class="delta ${c.kind}">${arrow} ${c.text}</span>${c.abs ? `<span class="abs">${c.abs}</span>` : ''}<span class="abs">較上期</span></div>`;
   const note = m.type === 'snapshot' ? '（期末）' : '';
   return `<div class="kpi-card">
@@ -1389,7 +1389,7 @@ const OVERVIEW_KEYS = {
 };
 function ovDelta(m, cur, prev) {
   const c = compare(m, cur, prev);
-  if (c.kind === 'none') return '<span class="ov-delta none">— 無前期</span>';
+  if (c.kind === 'none') return '';
   const arrow = { up: '▲', down: '▼', flat: '■' }[c.kind];
   return `<span class="ov-delta ${c.kind}">${arrow} ${c.text}</span>`;
 }
@@ -1443,7 +1443,6 @@ function Overview(ctx, jobs) {
     <div class="ov-hero">
       <div class="ov-hero-top">
         <span class="ov-kicker">ALL PLATFORMS · ${ctx.cur.label}</span>
-        <span class="ov-kicker dim">vs ${ctx.prev.label}</span>
       </div>
       <div class="ov-totals">
         <div class="ov-total">
@@ -1461,7 +1460,7 @@ function Overview(ctx, jobs) {
         <div class="ov-bar">${bar}</div>
         <div class="ov-legend">${legend}</div>
       </div>
-      <div class="ov-note">觸及與觀看為各平台觸及人數、觸及帳號、瀏覽次數、影片觀看次數加總；互動為 FB、IG、Threads 加總（YouTube 以觀看分鐘呈現，不列入互動）。點下方平台卡片看完整數據。</div>
+
     </div>
     <div class="ov-grid">${cards}</div>
   </section>`;
@@ -1503,8 +1502,7 @@ function render() {
   lastMobile = isMobile();
   const ctx = resolvePeriod();
   syncControls();
-  document.getElementById('period-caption').innerHTML =
-    `本期 <b>${ctx.cur.label}</b>　對比上期 <b>${ctx.prev.label}</b><span class="cap-note">　｜流量類指標為期間加總，粉絲與追蹤者取期末值</span>`;
+  document.getElementById('period-caption').innerHTML = `本期 <b>${ctx.cur.label}</b>`;
 
   Object.values(charts).forEach(c => c.destroy());
   charts = {};
