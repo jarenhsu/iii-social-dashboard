@@ -534,6 +534,11 @@
     table.posts tr { background: var(--card-grad); box-shadow: var(--soft-shadow); border-color: rgba(0,0,0,0.06); }
     table.posts td.num { background: linear-gradient(180deg, #f6f6f7, #ececef); }
   }
+
+  .tag.yt { background: var(--yt-grad); color: #fff; }
+  .thumb.ph.yt { color: var(--yt); background: rgba(230,0,35,0.08); }
+  .thumb.yt-thumb { width: 112px; height: 63px; }
+  @media (max-width: 640px) { .thumb.yt-thumb { width: 104px; height: 58px; } }
 </style>
 </head>
 <body>
@@ -642,7 +647,7 @@ const PLATFORMS = [
       { id: 'yt_subs', label: '新增訂閱', type: 'flow', def: '期間內新增的訂閱數（未扣除取消訂閱）。' },
       { id: 'yt_videos', label: '上片數', type: 'flow', def: '期間內新發布的影片數，依影片清單的發布時間計算。' },
     ],
-    todo: '單支影片的觀看、留言、按讚等成效（目前影片清單只有標題與連結）', noSnapshot: true },
+    todo: '平均觀看時長與帶來的訂閱數等單支影片深度數據（目前貼文表只存觀看、按讚、留言、分享）', noSnapshot: true },
 ];
 const METRIC = {};
 PLATFORMS.forEach(p => p.metrics.forEach(m => { METRIC[m.id] = { ...m, platform: p }; }));
@@ -779,7 +784,7 @@ function normalizePosts(parsed) {
   return rows.map(r => {
     const date = parseDay(r[cDate]); if (!date) return null;
     const p = String(r[cPlat]).toLowerCase();
-    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : null;
+    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : p.includes('yt') || p.includes('youtube') ? 'yt' : null;
     if (!platform) return null;
     const reach = toNum(r[cReach]), engage = toNum(r[cEng]);
     return {
@@ -818,7 +823,17 @@ function mergeYouTube(monthlyParsed, videosParsed) {
       if (cS) row.vals.yt_subs = toNum(r[cS]);
     });
   }
-  if (videosParsed?.headers?.length) {
+  const ytPosts = DATA.posts.filter(x => x.platform === 'yt');
+  if (ytPosts.length) {
+    DATA.videos = ytPosts.map(x => ({ date: x.date, title: x.title, url: x.url, id: (x.id || '').replace(/^YT_/, ''), views: x.reach }))
+      .sort((a, b) => b.date - a.date);
+    const first = DATA.videos[DATA.videos.length - 1].date;
+    const firstM = new Date(first.getFullYear(), first.getMonth(), 1);
+    // 貼文表只收今年影片，所以從今年 1 月起算上片數
+    const yStart = new Date(DATA.videos[0].date.getFullYear(), 0, 1);
+    DATA.monthly.forEach(r => { if (r.date >= (yStart < firstM ? yStart : firstM)) r.vals.yt_videos = 0; });
+    DATA.videos.forEach(v => { const row = ensure(v.date); if (row) row.vals.yt_videos = (row.vals.yt_videos || 0) + 1; });
+  } else if (videosParsed?.headers?.length) {
     const h = videosParsed.headers;
     const col = (...keys) => h.find(x => keys.some(k => x.includes(k)));
     const cT = col('發布', 'publish', '時間'), cTitle = col('標題', 'title'), cUrl = col('連結', 'url', 'link'), cId = col('影片ID', 'id');
@@ -1135,7 +1150,7 @@ const POST_SORTS = [
 function Thumb(x) {
   const ph = `<div class="thumb ph ${x.platform}">${x.platform.toUpperCase()}</div>`;
   if (!x.img) return ph;
-  const img = `<img class="thumb" src="${x.img}" alt="" loading="lazy" referrerpolicy="no-referrer"
+  const img = `<img class="thumb${x.platform === 'yt' ? ' yt-thumb' : ''}" src="${x.img}" alt="" loading="lazy" referrerpolicy="no-referrer"
     onerror="this.outerHTML='<div class=&quot;thumb ph ${x.platform}&quot;>${x.platform.toUpperCase()}</div>'">`;
   return x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${img}</a>` : img;
 }
@@ -1146,13 +1161,12 @@ function VideoWall(ctx) {
   const body = list.length
     ? `<div class="video-grid">${list.map(v => `<a class="video-card" href="${v.url}" target="_blank" rel="noopener">
         <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
-        <div class="video-meta"><div class="video-title">${v.title}</div><div class="video-date">${dayKey(v.date)}</div></div>
+        <div class="video-meta"><div class="video-title">${v.title}</div><div class="video-date">${dayKey(v.date)}${v.views != null ? `　▶ ${fmtNum(v.views)} 次觀看` : ''}</div></div>
       </a>`).join('')}</div>`
     : '<div class="empty" style="padding:24px">本期間沒有新影片</div>';
   return `<div class="video-block"><div class="chart-title" style="margin-bottom:14px">本期上片（${list.length} 支）</div>${body}</div>`;
 }
 function TopPostsTable(ctx) {
-  if (state.platform === 'yt') return '';
   const chips = POST_SORTS.map(s => `<button class="chip ${s.id === state.postSort ? 'active' : ''}" onclick="setPostSort('${s.id}')" ${DATA.hasPosts ? '' : 'disabled'}>${s.label}</button>`).join('');
   const head = `<div class="section-head"><div class="section-title all">Top Posts 內容排行</div><div class="chip-row">${chips}</div></div>`;
   if (!DATA.hasPosts) {
