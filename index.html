@@ -539,6 +539,14 @@
   .thumb.ph.yt { color: var(--yt); background: rgba(230,0,35,0.08); }
   .thumb.yt-thumb { width: 112px; height: 63px; }
   @media (max-width: 640px) { .thumb.yt-thumb { width: 104px; height: 58px; } }
+
+  /* ===== Threads ===== */
+  :root { --th: #111113; --th-grad: linear-gradient(120deg, #000000 0%, #2b2b30 60%, #55555d 100%); }
+  .kpi-value.th { color: var(--th); }
+  .section-title.th { background: var(--th-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(0,0,0,0.55); }
+  .platform-tab.active-th { background: var(--th-grad); border-color: transparent; color: #fff; }
+  .tag.th { background: var(--th-grad); color: #fff; }
+  .thumb.ph.th { color: #111113; background: linear-gradient(160deg, #ffffff, #e9e9ec); }
 </style>
 </head>
 <body>
@@ -580,6 +588,7 @@
         <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
         <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
         <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
+        <button class="platform-tab" id="tab-th" onclick="setPlatform('th')">Threads</button>
         <button class="platform-tab" id="tab-yt" onclick="setPlatform('yt')">YouTube</button>
       </div>
     </div>
@@ -639,6 +648,17 @@ const PLATFORMS = [
       { id: 'ig_er', label: '互動率', type: 'ratio', num: 'ig_engage', den: 'ig_reach', def: '互動次數 ÷ 觸及帳號。比較時以「百分點」呈現差異。' },
     ],
     todo: '貼文數、平均單篇互動、淨增追蹤（需 n8n 另抓貼文清單與每日追蹤變化）' },
+  { id: 'th', name: 'Threads', color: '#111113', fill: 'rgba(17,17,19,0.08)', prevColor: 'rgba(101,109,118,0.7)',
+    metrics: [
+      { id: 'th_followers', label: '粉絲數', type: 'snapshot', def: 'Threads 粉絲數（followers_count），取期末快照。' },
+      { id: 'th_views', label: '瀏覽次數', type: 'flow', def: '期間內 Threads 貼文被瀏覽的次數加總。' },
+      { id: 'th_engage', label: '互動次數', type: 'flow', def: '按讚、回覆、轉發、引用加總。' },
+      { id: 'th_er', label: '互動率', type: 'ratio', num: 'th_engage', den: 'th_views', def: '互動次數 ÷ 瀏覽次數。比較時以「百分點」呈現差異。' },
+      { id: 'th_likes', label: '按讚', type: 'flow', def: '期間內貼文獲得的按讚數。' },
+      { id: 'th_replies', label: '回覆', type: 'flow', def: '期間內貼文獲得的回覆數。' },
+      { id: 'th_reposts', label: '轉發與引用', type: 'flow', def: '期間內貼文被轉發與引用的次數。' },
+    ],
+    todo: '每月帳號數據尚未寫入（下一步用 n8n 寫進工作表1），目前只有單篇貼文' },
   { id: 'yt', name: 'YouTube', color: '#e60023', fill: 'rgba(230,0,35,0.10)', prevColor: 'rgba(101,109,118,0.7)',
     metrics: [
       { id: 'yt_views', label: '觀看次數', type: 'flow', def: '頻道所有影片在期間內的總觀看次數（YouTube 後台數據）。' },
@@ -664,6 +684,15 @@ function detectColumns(headers) {
       else if (l.includes('頁面') || l.includes('page_view')) map.fb_pageviews = h;
       else if (l.includes('影片') || l.includes('video')) map.fb_views = h;
       else if (l.includes('追蹤') || l.includes('follow')) map.fb_follows = h;
+    }
+    if (l.startsWith('th')) {
+      if (l.includes('粉絲') || l.includes('follower')) map.th_followers = h;
+      else if (l.includes('瀏覽') || l.includes('view')) map.th_views = h;
+      else if (l.includes('互動') || l.includes('engage')) map.th_engage = h;
+      else if (l.includes('讚') || l.includes('like')) map.th_likes = h;
+      else if (l.includes('回覆') || l.includes('repl')) map.th_replies = h;
+      else if (l.includes('轉發') || l.includes('引用') || l.includes('repost')) map.th_reposts = h;
+      return;
     }
     if (l.includes('ig')) {
       if (l.includes('追蹤') || l.includes('follower')) map.ig_followers = h;
@@ -784,7 +813,7 @@ function normalizePosts(parsed) {
   return rows.map(r => {
     const date = parseDay(r[cDate]); if (!date) return null;
     const p = String(r[cPlat]).toLowerCase();
-    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : p.includes('yt') || p.includes('youtube') ? 'yt' : null;
+    const platform = p.includes('ig') || p.includes('insta') ? 'ig' : p.includes('fb') || p.includes('face') ? 'fb' : p.includes('yt') || p.includes('youtube') ? 'yt' : (p === 'th' || p.includes('threads')) ? 'th' : null;
     if (!platform) return null;
     const reach = toNum(r[cReach]), engage = toNum(r[cEng]);
     return {
@@ -1013,7 +1042,7 @@ function syncControls() {
   // 手機版：讓目前選中的區間捲進畫面
   const act = document.querySelector('[data-period].active');
   if (act && isMobile()) { const row = act.parentElement; row.scrollLeft = act.offsetLeft - row.offsetLeft - 8; }
-  ['all', 'fb', 'ig', 'yt'].forEach(p => {
+  ['all', 'fb', 'ig', 'th', 'yt'].forEach(p => {
     document.getElementById('tab-' + p).className = 'platform-tab' + (state.platform === p ? ' active-' + p : '');
   });
 }
