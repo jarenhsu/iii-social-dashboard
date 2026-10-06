@@ -681,6 +681,30 @@
     .period-caption { font-size: 12px; margin: 4px 4px 20px; line-height: 1.6; }
     .cap-note { display: none; }
   }
+
+  /* ===== 平台卡片：明亮低彩度 ===== */
+  .ov-card { color: #1d1d22; box-shadow: 0 14px 34px -22px rgba(30,30,45,0.35), inset 0 1px 0 rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.7); }
+  .ov-card.fb { background: linear-gradient(160deg, #f4f7fc 0%, #e4ebf6 55%, #d3deee 100%); }
+  .ov-card.ig { background: linear-gradient(160deg, #faf3f6 0%, #f0e2ea 55%, #e5d0dd 100%); }
+  .ov-card.th { background: linear-gradient(160deg, #f7f7f8 0%, #ebebee 55%, #dcdce1 100%); }
+  .ov-card.yt { background: linear-gradient(160deg, #fcf4f4 0%, #f3e3e4 55%, #e8d1d3 100%); }
+  .ov-card:hover { box-shadow: 0 22px 44px -22px rgba(30,30,45,0.45), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .ov-card .ov-label { color: #5d5d68; }
+  .ov-card.fb .ov-label { color: #4e6385; }
+  .ov-card.ig .ov-label { color: #85566f; }
+  .ov-card.yt .ov-label { color: #8a4f53; }
+  .ov-card.fb .ov-num { color: #1f3a66; }
+  .ov-card.ig .ov-num { color: #5e2445; }
+  .ov-card.th .ov-num { color: #26262c; }
+  .ov-card.yt .ov-num { color: #6a1c22; }
+  .ov-card .ov-metric.sub { border-top-color: rgba(0,0,0,0.08) !important; }
+  .ov-card .ov-go { color: rgba(0,0,0,0.38); }
+  .ov-card:hover .ov-go { color: #1d1d22; }
+  .ov-card .ov-delta.up { background: rgba(26,127,55,0.12); color: #1a7f37; }
+  .ov-card .ov-delta.down { background: rgba(207,34,46,0.10); color: #c0262f; }
+  .ov-card .ov-delta.flat, .ov-card .ov-delta.none { background: rgba(0,0,0,0.06); color: #6a6a73; }
+  .ov-chip { color: #fff; }
+  .ov-chip.th { background: var(--th-grad); color: #fff; }
 </style>
 </head>
 <body>
@@ -1447,7 +1471,7 @@ function drawSparkDark(id, p, m, ctx) {
   if (s.filter(x => x.v !== null).length < 2) return;
   const el = document.getElementById(id); if (!el) return;
   const g = el.getContext('2d').createLinearGradient(0, 0, 0, 60);
-  g.addColorStop(0, 'rgba(255,255,255,0.28)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  g.addColorStop(0, OV_FILL[p.id] || 'rgba(0,0,0,0.12)'); g.addColorStop(1, 'rgba(255,255,255,0)');
   charts[id] = new Chart(el, {
     type: 'line',
     data: { labels: s.map(x => x.label), datasets: [{ data: s.map(x => x.v), borderColor: OV_LINE[p.id] || '#fff', backgroundColor: g, fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4, spanGaps: true }] },
@@ -1456,7 +1480,8 @@ function drawSparkDark(id, p, m, ctx) {
       scales: { x: { display: false }, y: { display: false } } },
   });
 }
-const OV_LINE = { fb: '#7fb2ff', ig: '#f39ac4', th: '#e8e8ee', yt: '#ff8a8a' };
+const OV_LINE = { fb: '#3f6fb8', ig: '#a8507f', th: '#5c5c66', yt: '#ad3a42' };
+const OV_FILL = { fb: 'rgba(63,111,184,0.22)', ig: 'rgba(168,80,127,0.20)', th: 'rgba(92,92,102,0.18)', yt: 'rgba(173,58,66,0.20)' };
 // 數字跳動
 function countUp() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
