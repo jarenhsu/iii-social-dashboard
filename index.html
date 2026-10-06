@@ -802,7 +802,7 @@ window.addEventListener('resize', () => {
 
 // ---------- 狀態 ----------
 const state = {
-  period: 'last_3m', gran: 'month', platform: 'all',
+  period: 'ytd', gran: 'month', platform: 'all',
   customFrom: null, customTo: null,
   trendMetric: { fb: 'fb_reach', ig: 'ig_reach' },
   postSort: 'reach',
@@ -1044,7 +1044,8 @@ function resolvePeriod() {
       return { cur: { ...cur, label: dl(cur) }, prev: { ...prev, label: dl(prev) }, unit };
     }
   }
-  prev = mRange(addMonths(cur.start, -cur.n), cur.n);
+  // 今年：跟去年同期比（例如 2026-01~09 對比 2025-01~09）
+  prev = state.period === 'ytd' ? mRange(addMonths(cur.start, -12), cur.n) : mRange(addMonths(cur.start, -cur.n), cur.n);
   return { cur: { ...cur, label: mLabel(cur) }, prev: { ...prev, label: mLabel(prev) }, unit };
 }
 
