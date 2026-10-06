@@ -440,6 +440,26 @@
     .post-cell a, .post-cell span { font-size: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .thumb { width: 72px; height: 72px; }
   }
+
+  /* ===== YouTube ===== */
+  :root { --yt: #e60023; --yt-grad: linear-gradient(120deg, #b3001b 0%, #e60023 55%, #ff5a5f 100%); }
+  .kpi-value.yt { color: var(--yt); }
+  .section-title.yt { background: var(--yt-grad); color: #fff; box-shadow: 0 8px 20px -8px rgba(230,0,35,0.5); }
+  .platform-tab.active-yt { background: var(--yt-grad); border-color: transparent; color: #fff; }
+  .video-block { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 24px 26px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+  .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .video-card { display: block; text-decoration: none; color: var(--text); border-radius: 14px; overflow: hidden; background: var(--surface2); border: 1px solid var(--border); }
+  .video-card:hover .video-title { color: var(--yt); }
+  .video-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #ddd; }
+  .video-meta { padding: 10px 12px 12px; }
+  .video-title { font-size: 15px; font-weight: 700; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .video-date { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: var(--num-font); }
+  @media (max-width: 640px) {
+    .video-block { padding: 16px 14px; border-radius: 14px; }
+    .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .video-title { font-size: 13px; }
+    .video-date { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -481,6 +501,7 @@
         <button class="platform-tab active-all" id="tab-all" onclick="setPlatform('all')">全部平台</button>
         <button class="platform-tab" id="tab-fb" onclick="setPlatform('fb')">Facebook</button>
         <button class="platform-tab" id="tab-ig" onclick="setPlatform('ig')">Instagram</button>
+        <button class="platform-tab" id="tab-yt" onclick="setPlatform('yt')">YouTube</button>
       </div>
     </div>
     <div class="filter-group">
@@ -511,6 +532,9 @@
 //   - 貼文資料：工作表「貼文」（TODO：尚未建立，建立後自動啟用 Top Posts）
 // ============================================================
 const SHEET_ID = '1yC3TtIXVg377qBTsZjA5Yad5HxVRBwX6BE3S4nel9A0';
+// YouTube（另一份已發布到網路的試算表）
+const YT_MONTHLY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=999104727&single=true&output=csv';
+const YT_VIDEOS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQtWeKJOOWHM44KvgkQl_dBRbG6pFl8RzC4BWKlOF90rCTcbOsOKBgzw_744YljOTr-IN5ZHeNgI7zS/pub?gid=595465853&single=true&output=csv';
 const csvUrl = q => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&${q}`;
 
 // ---------- 指標定義 ----------
@@ -536,6 +560,15 @@ const PLATFORMS = [
       { id: 'ig_er', label: '互動率', type: 'ratio', num: 'ig_engage', den: 'ig_reach', def: '互動次數 ÷ 觸及帳號。比較時以「百分點」呈現差異。' },
     ],
     todo: '貼文數、平均單篇互動、淨增追蹤（需 n8n 另抓貼文清單與每日追蹤變化）' },
+  { id: 'yt', name: 'YouTube', color: '#e60023', fill: 'rgba(230,0,35,0.10)', prevColor: 'rgba(101,109,118,0.7)',
+    metrics: [
+      { id: 'yt_views', label: '觀看次數', type: 'flow', def: '頻道所有影片在期間內的總觀看次數（YouTube 後台數據）。' },
+      { id: 'yt_minutes', label: '觀看分鐘數', type: 'flow', def: '期間內觀眾觀看頻道影片的總分鐘數。' },
+      { id: 'yt_avg', label: '平均觀看時長', type: 'ratio', unit: 'min', num: 'yt_minutes', den: 'yt_views', def: '觀看分鐘數 ÷ 觀看次數，代表每次觀看平均看了幾分鐘。' },
+      { id: 'yt_subs', label: '新增訂閱', type: 'flow', def: '期間內新增的訂閱數（未扣除取消訂閱）。' },
+      { id: 'yt_videos', label: '上片數', type: 'flow', def: '期間內新發布的影片數，依影片清單的發布時間計算。' },
+    ],
+    todo: '單支影片的觀看、留言、按讚等成效（目前影片清單只有標題與連結）', noSnapshot: true },
 ];
 const METRIC = {};
 PLATFORMS.forEach(p => p.metrics.forEach(m => { METRIC[m.id] = { ...m, platform: p }; }));
@@ -577,7 +610,7 @@ const state = {
   trendMetric: { fb: 'fb_reach', ig: 'ig_reach' },
   postSort: 'reach',
 };
-const DATA = { monthly: [], daily: [], posts: [], hasPosts: false };
+const DATA = { monthly: [], daily: [], posts: [], hasPosts: false, videos: [] };
 let charts = {};
 
 // ---------- 工具 ----------
@@ -636,8 +669,9 @@ function fmtNum(n) {
 }
 const fmtFull = n => (n === null || n === undefined || isNaN(n)) ? '—' : Number(n).toLocaleString('zh-TW', { maximumFractionDigits: 2 });
 const fmtPct = r => (r === null || r === undefined || isNaN(r)) ? '—' : (r * 100).toFixed(1) + '%';
-const fmtVal = (m, v) => m.type === 'ratio' ? fmtPct(v) : fmtNum(v);
-const fmtValFull = (m, v) => m.type === 'ratio' ? (v === null ? '—' : (v * 100).toFixed(2) + '%') : fmtFull(v);
+const fmtMin = v => (v === null || v === undefined || isNaN(v)) ? '—' : v.toFixed(1) + ' 分';
+const fmtVal = (m, v) => m.unit === 'min' ? fmtMin(v) : m.type === 'ratio' ? fmtPct(v) : fmtNum(v);
+const fmtValFull = (m, v) => m.unit === 'min' ? (v === null ? '—' : v.toFixed(2) + ' 分鐘') : m.type === 'ratio' ? (v === null ? '—' : (v * 100).toFixed(2) + '%') : fmtFull(v);
 
 // ---------- 讀取資料 ----------
 async function fetchSheet(q) {
@@ -682,11 +716,62 @@ function normalizePosts(parsed) {
   }).filter(Boolean);
 }
 
+async function fetchUrl(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseCSV(await res.text());
+}
+// YouTube：月資料併進 DATA.monthly，影片清單另存並換算每月上片數
+function mergeYouTube(monthlyParsed, videosParsed) {
+  const byKey = new Map(DATA.monthly.map(r => [r.key, r]));
+  // 不讓 YouTube 比 FB／IG 多出來的月份變成「最新月份」，避免 FB／IG 本期變成空的
+  const maxDate = DATA.monthly.length ? DATA.monthly[DATA.monthly.length - 1].date : null;
+  const ensure = d => {
+    const k = monthKey(d);
+    if (maxDate && new Date(d.getFullYear(), d.getMonth(), 1) > maxDate) return null;
+    if (!byKey.has(k)) { const r = { date: new Date(d.getFullYear(), d.getMonth(), 1), key: k, vals: {} }; byKey.set(k, r); DATA.monthly.push(r); }
+    return byKey.get(k);
+  };
+  if (monthlyParsed?.headers?.length) {
+    const h = monthlyParsed.headers;
+    const col = (...keys) => h.find(x => keys.some(k => x.includes(k)));
+    const cV = col('觀看次數', 'views'), cM = col('觀看分鐘', '分鐘', 'minutes'), cS = col('訂閱', 'subscriber');
+    monthlyParsed.rows.forEach(r => {
+      const d = parseMonth(r[h[0]]); if (!d) return;
+      const row = ensure(d); if (!row) return;
+      if (cV) row.vals.yt_views = toNum(r[cV]);
+      if (cM) row.vals.yt_minutes = toNum(r[cM]);
+      if (cS) row.vals.yt_subs = toNum(r[cS]);
+    });
+  }
+  if (videosParsed?.headers?.length) {
+    const h = videosParsed.headers;
+    const col = (...keys) => h.find(x => keys.some(k => x.includes(k)));
+    const cT = col('發布', 'publish', '時間'), cTitle = col('標題', 'title'), cUrl = col('連結', 'url', 'link'), cId = col('影片ID', 'id');
+    DATA.videos = videosParsed.rows.map(r => {
+      const t = new Date(r[cT]); if (isNaN(t)) return null;
+      const tw = new Date(t.getTime() + 8 * 3600 * 1000); // 轉台灣時間
+      const date = new Date(tw.getUTCFullYear(), tw.getUTCMonth(), tw.getUTCDate());
+      return { date, title: r[cTitle] || '(無標題)', url: r[cUrl] || '', id: r[cId] || '' };
+    }).filter(Boolean).sort((a, b) => b.date - a.date);
+    if (DATA.videos.length) {
+      // 只從清單最早那個月開始算上片數，更早的月份不知道就留空
+      const first = DATA.videos[DATA.videos.length - 1].date;
+      const firstM = new Date(first.getFullYear(), first.getMonth(), 1);
+      DATA.monthly.forEach(r => { if (r.date >= firstM) r.vals.yt_videos = 0; });
+      DATA.videos.forEach(v => { const row = ensure(v.date); if (row) row.vals.yt_videos = (row.vals.yt_videos || 0) + 1; });
+    }
+  }
+  DATA.monthly.sort((a, b) => a.date - b.date);
+}
+
 async function loadData() {
-  const [m, d, p] = await Promise.allSettled([
+  const [m, d, p, ym, yv] = await Promise.allSettled([
     fetchSheet('gid=0'),
     fetchSheet('sheet=' + encodeURIComponent('每日')),
     fetchSheet('sheet=' + encodeURIComponent('貼文')),
+    fetchUrl(YT_MONTHLY_URL),
+    fetchUrl(YT_VIDEOS_URL),
   ]);
   if (m.status !== 'fulfilled') {
     showError(`無法讀取數據：${m.reason?.message || m.reason}`, '請確認 Google Sheets 已設定為「知道連結的任何人都能檢視」。');
@@ -698,13 +783,15 @@ async function loadData() {
   if (p.status === 'fulfilled' && (p.value.headers || []).some(h => /平台|platform/i.test(h))) {
     DATA.posts = normalizePosts(p.value); DATA.hasPosts = true;
   }
+  mergeYouTube(ym.status === 'fulfilled' ? ym.value : null, yv.status === 'fulfilled' ? yv.value : null);
   if (!DATA.monthly.length) {
     document.getElementById('app').innerHTML = `<div class="empty">📊 目前尚無月資料<br><small style="margin-top:8px;display:block">請先透過 n8n 匯入數據到 Google Sheets</small></div>`;
     return;
   }
   const last = DATA.monthly[DATA.monthly.length - 1].key;
+  const ytNote = DATA.videos.length ? `｜YouTube 影片 ${DATA.videos.length} 支` : '';
   document.getElementById('last-updated').textContent =
-    `資料更新至 ${last}｜月資料 ${DATA.monthly.length} 筆｜每日資料 ${DATA.daily.length ? DATA.daily.length + ' 筆' : '尚無'}｜貼文資料 ${DATA.hasPosts ? DATA.posts.length + ' 筆' : '尚無'}`;
+    `資料更新至 ${last}｜月資料 ${DATA.monthly.length} 筆｜每日資料 ${DATA.daily.length ? DATA.daily.length + ' 筆' : '尚無'}｜貼文資料 ${DATA.hasPosts ? DATA.posts.length + ' 筆' : '尚無'}${ytNote}`;
   // 自訂區間預設：近 3 個月
   state.customTo = last;
   state.customFrom = monthKey(addMonths(DATA.monthly[DATA.monthly.length - 1].date, -2));
@@ -778,7 +865,7 @@ function hasMetric(m) {
 // 比較：處理 null、0、無前期
 function compare(m, cur, prev) {
   if (cur === null || prev === null) return { kind: 'none' };
-  if (m.type === 'ratio') {
+  if (m.type === 'ratio' && m.unit !== 'min') {
     const pp = (cur - prev) * 100;
     if (Math.abs(pp) < 0.005) return { kind: 'flat', text: '持平' };
     const rel = prev ? (cur - prev) / Math.abs(prev) : null;
@@ -837,7 +924,7 @@ function syncControls() {
   // 手機版：讓目前選中的區間捲進畫面
   const act = document.querySelector('[data-period].active');
   if (act && isMobile()) { const row = act.parentElement; row.scrollLeft = act.offsetLeft - row.offsetLeft - 8; }
-  ['all', 'fb', 'ig'].forEach(p => {
+  ['all', 'fb', 'ig', 'yt'].forEach(p => {
     document.getElementById('tab-' + p).className = 'platform-tab' + (state.platform === p ? ' active-' + p : '');
   });
 }
@@ -902,7 +989,7 @@ function TrendChart(p, metrics, ctx) {
       const n = Math.max(cb.length, pb.length);
       const curVals = Array.from({ length: n }, (_, i) => cb[i] ? aggregate(cb[i].rows, sel) : null);
       const prevVals = Array.from({ length: n }, (_, i) => pb[i] ? aggregate(pb[i].rows, sel) : null);
-      const toY = v => v === null ? null : (sel.type === 'ratio' ? +(v * 100).toFixed(2) : v);
+      const toY = v => v === null ? null : (sel.unit === 'min' ? +v.toFixed(2) : sel.type === 'ratio' ? +(v * 100).toFixed(2) : v);
       const single = n <= 1;
       const labels = Array.from({ length: n }, (_, i) => cb[i]?.label || `第 ${i + 1} 期`);
       charts['trend-' + p.id] = new Chart(document.getElementById('trend-' + p.id), {
@@ -935,7 +1022,7 @@ function TrendChart(p, metrics, ctx) {
           },
           scales: {
             x: { ticks: { color: '#4a5260', maxRotation: 0, autoSkipPadding: 12, font: { size: isMobile() ? 11 : 13, family: "'Outfit', 'Noto Sans TC', sans-serif" } }, grid: { color: 'rgba(208,215,222,0.6)' } },
-            y: { beginAtZero: true, ticks: { color: '#4a5260', maxTicksLimit: isMobile() ? 5 : 8, font: { size: isMobile() ? 11 : 13, family: "'Outfit', 'Noto Sans TC', sans-serif" }, callback: v => sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(208,215,222,0.6)' } },
+            y: { beginAtZero: true, ticks: { color: '#4a5260', maxTicksLimit: isMobile() ? 5 : 8, font: { size: isMobile() ? 11 : 13, family: "'Outfit', 'Noto Sans TC', sans-serif" }, callback: v => sel.unit === 'min' ? v + ' 分' : sel.type === 'ratio' ? v + '%' : fmtNum(v) }, grid: { color: 'rgba(208,215,222,0.6)' } },
           },
         },
       });
@@ -949,7 +1036,7 @@ function YearSummary(p, metrics) {
   const year = latest.getFullYear();
   const rows = DATA.monthly.filter(r => r.date.getFullYear() === year);
   const cards = metrics.filter(m => m.type === 'flow').map(m => {
-    const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null);
+    const vals = rows.map(r => r.vals[m.id]).filter(v => v !== null && v !== undefined);
     const total = vals.reduce((a, b) => a + b, 0);
     const avg = vals.length ? total / vals.length : null;
     return `<div class="kpi-card year" style="min-height:auto">
@@ -978,7 +1065,20 @@ function Thumb(x) {
     onerror="this.outerHTML='<div class=&quot;thumb ph ${x.platform}&quot;>${x.platform.toUpperCase()}</div>'">`;
   return x.url ? `<a href="${x.url}" target="_blank" rel="noopener">${img}</a>` : img;
 }
+// YouTube 本期上片：縮圖用 YouTube 公開縮圖網址，不會過期
+function VideoWall(ctx) {
+  if (!DATA.videos.length) return '';
+  const list = DATA.videos.filter(v => inRange(v.date, ctx.cur));
+  const body = list.length
+    ? `<div class="video-grid">${list.map(v => `<a class="video-card" href="${v.url}" target="_blank" rel="noopener">
+        <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
+        <div class="video-meta"><div class="video-title">${v.title}</div><div class="video-date">${dayKey(v.date)}</div></div>
+      </a>`).join('')}</div>`
+    : '<div class="empty" style="padding:24px">本期間沒有新影片</div>';
+  return `<div class="video-block"><div class="chart-title" style="margin-bottom:14px">本期上片（${list.length} 支）</div>${body}</div>`;
+}
 function TopPostsTable(ctx) {
+  if (state.platform === 'yt') return '';
   const chips = POST_SORTS.map(s => `<button class="chip ${s.id === state.postSort ? 'active' : ''}" onclick="setPostSort('${s.id}')" ${DATA.hasPosts ? '' : 'disabled'}>${s.label}</button>`).join('');
   const head = `<div class="section-head"><div class="section-title all">Top Posts 內容排行</div><div class="chip-row">${chips}</div></div>`;
   if (!DATA.hasPosts) {
@@ -1030,8 +1130,9 @@ function render() {
       <div class="section-title ${p.id}">${p.name}</div>
       <div class="kpi-grid">${kpis}</div>
       <div class="charts-grid">${trend.html}</div>
+      ${p.id === 'yt' ? VideoWall(ctx) : ''}
       ${YearSummary(p, metrics)}
-      <div class="todo-note"><b>尚缺資料：</b>${p.todo}${metrics.some(m => m.type === 'snapshot') ? '' : '；粉絲／追蹤者快照尚未寫入，有資料後會自動出現'}</div>
+      <div class="todo-note"><b>尚缺資料：</b>${p.todo}${p.noSnapshot || metrics.some(m => m.type === 'snapshot') ? '' : '；粉絲／追蹤者快照尚未寫入，有資料後會自動出現'}</div>
     </section>`;
   });
   html += TopPostsTable(ctx);
